@@ -7,7 +7,6 @@ COPY .mvn .mvn
 COPY pom.xml .
 
 COPY src ./src
-COPY ./backend/pom.xml ./src
 
 RUN chmod +x mvnw
 

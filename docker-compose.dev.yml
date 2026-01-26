@@ -1,12 +1,39 @@
 services:
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile.dev
     image: homie-backend
+    container_name: homie-backend
     ports:
       - "8080:8080"
     volumes:
-      - ./src:/app/src
+      - ./backend/src:/app/src
+      - homie-h2-data:/tmp
     environment:
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/recipes"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    image: homie-frontend
+    container_name: homie-frontend
+    volumes:
+      - ./frontend/src:/app/src
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://backend:8080
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  homie-h2-data:
