@@ -27,7 +27,7 @@ function App() {
     <>
       <div>
         {recipes.map( recipe =>
-          <div key={recipe.id}>
+          <div key={recipe.id} className="card">
             {recipe.name}
           </div>
         )}
