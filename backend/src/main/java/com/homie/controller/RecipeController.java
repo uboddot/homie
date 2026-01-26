@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/recipes")
@@ -27,4 +29,8 @@ public class RecipeController {
         return new ResponseEntity<List<Recipe>>(recipeRepository.findAll(), HttpStatus.OK);
     }
 
+    @GetMapping("/getRecipeById")
+    public ResponseEntity<Recipe> getRecipeById(@RequestParam Long recipeId) {
+        return new ResponseEntity<Recipe>(recipeRepository.findById(recipeId).orElse(null), HttpStatus.OK);
+    }
 }
