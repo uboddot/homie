@@ -13,7 +13,7 @@ public class GeminiTextTest {
 
         GenerateContentResponse response = client.models.generateContent(
                 "gemini-3-flash-preview",
-                "Explain how AI works in a few words",
+                param,
                 null);
 
         return response.text();
