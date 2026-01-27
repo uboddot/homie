@@ -9,6 +9,7 @@ COPY pom.xml .
 COPY src ./src
 
 RUN chmod +x mvnw
+RUN sed -i 's/\r$//' mvnw
 
 EXPOSE 8080
 
