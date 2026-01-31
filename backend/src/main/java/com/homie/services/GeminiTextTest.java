@@ -8,8 +8,10 @@ import com.google.genai.types.GenerateContentResponse;
 @Component
 public class GeminiTextTest {
     public String getGeminiResponse(String param) {
-        // The client gets the API key from the environment variable `GEMINI_API_KEY`.
-        Client client = new Client();
+        String apiKey = System.getenv("GOOGLE_API_KEY");
+        Client client = new Client.Builder()
+                .apiKey(apiKey)
+                .build();
 
         GenerateContentResponse response = client.models.generateContent(
                 "gemini-3-flash-preview",
