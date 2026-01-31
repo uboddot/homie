@@ -39,6 +39,17 @@
   box-shadow: 0 0 1em #0002;
   border-color: bisque;
   background-color: beige;
+  color: black;
+  margin: 2rem;
+  width: 300px;
+  height: 200px;
+  text-align: start;
+}
+
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .read-the-docs {

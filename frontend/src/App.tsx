@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
-import './App.css'
+import { useEffect, useState } from 'react';
+import './App.css';
+import type { Recipe } from './model/Recipe';
+import Card from './Components/Card';
 
 function App() {
 
-  const [recipes, setRecipes] = useState([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
   
   useEffect(() => {
     fetch('http://localhost:8080/recipes')
@@ -25,11 +27,9 @@ function App() {
 
   return (
     <>
-      <div>
+      <div className="card-container">
         {recipes.map( recipe =>
-          <div key={recipe.id} className="card">
-            {recipe.name}
-          </div>
+          <Card key={recipe.id} {...recipe} />
         )}
       </div>
     </>
