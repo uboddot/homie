@@ -6,22 +6,29 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import com.homie.model.Recipe;
+import com.homie.model.Step;
 import com.homie.repository.RecipeRepository;
+import com.homie.repository.StepRepository;
 
 @Component
 public class Seeder {
 
         private final RecipeRepository recipeRepository;
+        private final StepRepository stepRepository;
 
-        public Seeder(RecipeRepository recipeRepository) {
+        public Seeder(RecipeRepository recipeRepository, StepRepository stepRepository) {
                 this.recipeRepository = recipeRepository;
+                this.stepRepository = stepRepository;
         }
 
         @PostConstruct
         public void seed() {
+                Recipe applePie = new Recipe("apple pie", "Delicious apple pie",
+                                List.of("apples", "flour", "sugar", "butter"), 60);
+                recipeRepository.save(applePie);
+                stepRepository.save(new Step(applePie, 1, "Preheat oven to 375°F (190°C)."));
+
                 // Seed a sample recipe when the application context starts
-                recipeRepository.save(new Recipe("apple pie", "Delicious apple pie",
-                                List.of("apples", "flour", "sugar", "butter"), 60));
                 recipeRepository.save(new Recipe("spaghetti bolognese", "Classic Italian pasta dish",
                                 List.of("spaghetti", "ground beef", "tomato sauce", "onion", "garlic"), 45));
                 recipeRepository.save(new Recipe("chocolate chip cookies", "Crispy on the outside, chewy on the inside",

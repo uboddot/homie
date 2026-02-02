@@ -30,8 +30,9 @@ public class Step {
     private int stepOrder;
     private String instruction;
 
-    public Step(int stepOrder, String instruction) {
+    public Step(Recipe recipe,int stepOrder, String instruction) {
         this.stepOrder = stepOrder;
         this.instruction = instruction;
+        this.recipe = recipe;
     }
 }
