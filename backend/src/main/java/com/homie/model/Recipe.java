@@ -3,6 +3,7 @@ package com.homie.model;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,8 +26,8 @@ public class Recipe {
 
     private String name;
     private String description;
-    
-    @OneToMany(mappedBy = "id")
+
+    @OneToMany(mappedBy = "recipe", fetch = FetchType.LAZY)
     private List<Step> steps;
 
     private List<String> ingredients;
@@ -37,11 +38,5 @@ public class Recipe {
         this.description = description;
         this.ingredients = ingredients;
         this.preparationTime = preparationTime;
-
-        this.steps = List.of(new Step(1, "Preheat the oven to 350°F (175°C)."),
-                             new Step(2, "Mix all ingredients in a bowl."),
-                             new Step(3, "Pour the mixture into a baking dish."),
-                             new Step(4, "Bake for 30 minutes or until golden brown."));
-
     }
 }
