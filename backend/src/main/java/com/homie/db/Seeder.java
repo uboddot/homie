@@ -23,10 +23,10 @@ public class Seeder {
 
         @PostConstruct
         public void seed() {
-                Recipe applePie = new Recipe("apple pie", "Delicious apple pie",
-                                List.of("apples", "flour", "sugar", "butter"), 60);
-                recipeRepository.save(applePie);
-                stepRepository.save(new Step(applePie, 1, "Preheat oven to 375°F (190°C)."));
+                // Recipe applePie = new Recipe("apple pie", "Delicious apple pie",
+                // List.of("apples", "flour", "sugar", "butter"), 60);
+                // recipeRepository.save(applePie);
+                // stepRepository.save(new Step(applePie, 1, "Preheat oven to 375°F (190°C)."));
 
                 // Seed a sample recipe when the application context starts
                 recipeRepository.save(new Recipe("spaghetti bolognese", "Classic Italian pasta dish",
