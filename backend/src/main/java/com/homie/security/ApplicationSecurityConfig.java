@@ -2,11 +2,12 @@ package com.homie.security;
 
 import static com.homie.security.ApplicationUserPermission.COURSE_WRITE;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +21,6 @@ public class ApplicationSecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
     public ApplicationSecurityConfig(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
@@ -28,16 +28,25 @@ public class ApplicationSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // .csrf(csrf ->
+                // csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                // .cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/css/**", "/js/**").permitAll()
                         .requestMatchers("/recipes/**").hasRole(ApplicationUserRole.STUDENT.name())
-                        .requestMatchers(HttpMethod.DELETE, "/management/**").hasAuthority(COURSE_WRITE.name())
-                        .requestMatchers(HttpMethod.POST, "/management/**").hasAuthority(COURSE_WRITE.name())
-                        .requestMatchers(HttpMethod.PUT, "/management/**").hasAuthority(COURSE_WRITE.name())
+                        .requestMatchers(HttpMethod.DELETE, "/management/**").hasAuthority(COURSE_WRITE.getPermission())
+                        .requestMatchers(HttpMethod.POST, "/management/**").hasAuthority(COURSE_WRITE.getPermission())
+                        .requestMatchers(HttpMethod.PUT, "/management/**").hasAuthority(COURSE_WRITE.getPermission())
                         .requestMatchers("/management/**").hasAnyRole(ApplicationUserRole.ADMIN.name())
                         .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults());
+                // .httpBasic(Customizer.withDefaults());
+                .formLogin(form -> form
+                        .defaultSuccessUrl("/recipes", true)
+                        .permitAll())
+                .rememberMe(remember -> remember
+                        .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) // 21 days
+                        .key("somethingverysecured"));
 
         return http.build();
     }
