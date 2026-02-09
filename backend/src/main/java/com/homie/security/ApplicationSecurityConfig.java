@@ -15,94 +15,68 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
 @Configuration
 public class ApplicationSecurityConfig {
 
-        private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-        public ApplicationSecurityConfig(PasswordEncoder passwordEncoder) {
-                this.passwordEncoder = passwordEncoder;
-        }
+    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-                http
-                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                                .csrf(csrf -> csrf.disable())
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/api/login",
-                                                                "/api/user")
-                                                .permitAll()
-                                                .requestMatchers("/recipes/**")
-                                                .hasRole(ApplicationUserRole.STUDENT.name())
-                                                .requestMatchers(HttpMethod.DELETE, "/management/**")
-                                                .hasAuthority(COURSE_WRITE.getPermission())
-                                                .requestMatchers(HttpMethod.POST, "/management/**")
-                                                .hasAuthority(COURSE_WRITE.getPermission())
-                                                .requestMatchers(HttpMethod.PUT, "/management/**")
-                                                .hasAuthority(COURSE_WRITE.getPermission())
-                                                .requestMatchers("/management/**")
-                                                .hasAnyRole(ApplicationUserRole.ADMIN.name())
-                                                .requestMatchers("/api/logout").authenticated()
-                                                .anyRequest().authenticated())
-                                .rememberMe(remember -> remember
-                                                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) // 21 days
-                                                .key("somethingverysecured"));
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                // .csrf(csrf ->
+                // csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                // .cors(cors -> cors.disable())
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/index.html", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/recipes/**").hasRole(ApplicationUserRole.STUDENT.name())
+                        .requestMatchers(HttpMethod.DELETE, "/management/**").hasAuthority(COURSE_WRITE.getPermission())
+                        .requestMatchers(HttpMethod.POST, "/management/**").hasAuthority(COURSE_WRITE.getPermission())
+                        .requestMatchers(HttpMethod.PUT, "/management/**").hasAuthority(COURSE_WRITE.getPermission())
+                        .requestMatchers("/management/**").hasAnyRole(ApplicationUserRole.ADMIN.name())
+                        .anyRequest().authenticated())
+                // .httpBasic(Customizer.withDefaults());
+                .formLogin(form -> form
+                        .defaultSuccessUrl("/recipes", true)
+                        .permitAll())
+                .rememberMe(remember -> remember
+                        .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) // 21 days
+                        .key("somethingverysecured"));
 
-                return http.build();
-        }
+        return http.build();
+    }
 
-        @Bean
-        public CorsConfigurationSource corsConfigurationSource() {
-                CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOrigins(java.util.List.of("http://localhost:5173", "http://localhost:3000"));
-                configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                configuration.setAllowedHeaders(java.util.List.of("*"));
-                configuration.setAllowCredentials(true);
-                configuration.setMaxAge(3600L);
+    @Bean
+    protected UserDetailsService userDetailsService() {
+        UserDetails annaSmithUser = User.builder()
+                .username("annasmith")
+                .password(passwordEncoder.encode("password"))
+                // .roles(ApplicationUserRole.STUDENT.name()) // ROLE_STUDENT
+                .authorities(ApplicationUserRole.STUDENT.getGrantedAuthorities())
+                .build();
 
-                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/**", configuration);
-                return source;
-        }
+        UserDetails lindaUser = User.builder()
+                .username("linda")
+                .password(passwordEncoder.encode("password123"))
+                // .roles(ApplicationUserRole.ADMIN.name()) // ROLE_ADMIN
+                .authorities(ApplicationUserRole.ADMIN.getGrantedAuthorities())
+                .build();
 
-        @Bean
-        public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-                return config.getAuthenticationManager();
-        }
+        UserDetails tomUser = User.builder()
+                .username("tom")
+                .password(passwordEncoder.encode("password123"))
+                // .roles(ApplicationUserRole.ADMINTRAINEE.name()) // ROLE_ADMINTRAINEE
+                .authorities(ApplicationUserRole.ADMINTRAINEE.getGrantedAuthorities())
+                .build();
 
-        @Bean
-        protected UserDetailsService userDetailsService() {
-                UserDetails annaSmithUser = User.builder()
-                                .username("annasmith")
-                                .password(passwordEncoder.encode("password"))
-                                // .roles(ApplicationUserRole.STUDENT.name()) // ROLE_STUDENT
-                                .authorities(ApplicationUserRole.STUDENT.getGrantedAuthorities())
-                                .build();
-
-                UserDetails lindaUser = User.builder()
-                                .username("linda")
-                                .password(passwordEncoder.encode("password123"))
-                                // .roles(ApplicationUserRole.ADMIN.name()) // ROLE_ADMIN
-                                .authorities(ApplicationUserRole.ADMIN.getGrantedAuthorities())
-                                .build();
-
-                UserDetails tomUser = User.builder()
-                                .username("tom")
-                                .password(passwordEncoder.encode("password123"))
-                                // .roles(ApplicationUserRole.ADMINTRAINEE.name()) // ROLE_ADMINTRAINEE
-                                .authorities(ApplicationUserRole.ADMINTRAINEE.getGrantedAuthorities())
-                                .build();
-
-                return new InMemoryUserDetailsManager(
-                                annaSmithUser,
-                                lindaUser,
-                                tomUser);
-        }
+        return new InMemoryUserDetailsManager(
+                annaSmithUser,
+                lindaUser,
+                tomUser);
+    }
 }
