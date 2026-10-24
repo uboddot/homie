@@ -13,6 +13,12 @@ public final class AuthDtos {
     public record RegisterRequest(String username, String email, String password) {
     }
 
+    public record VerifyEmailRequest(String token) {
+    }
+
+    public record ResendVerificationRequest(String email) {
+    }
+
     /** What the frontend gets to see of a user (never the password hash). */
     public record UserResponse(Long id, String username, String email, String role) {
         public static UserResponse from(AppUser user) {
@@ -21,5 +27,8 @@ public final class AuthDtos {
     }
 
     public record ErrorResponse(String message) {
+    }
+
+    public record MessageResponse(String message) {
     }
 }

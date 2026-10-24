@@ -1,0 +1,10 @@
+.resend-verification {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resend-verification-info {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { ApiError } from '../api/client';
+import ResendVerification from '../Components/ResendVerification';
 import { useAuth } from '../contexts/auth';
 import './AuthPage.css';
 
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [unconfirmed, setUnconfirmed] = useState(false);
 
   if (user) {
     return <Navigate to={from} replace />;
@@ -26,14 +28,21 @@ export default function LoginPage() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    setUnconfirmed(false);
     setSubmitting(true);
     try {
       await login(username, password);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError && err.status === 401
-        ? 'Wrong username or password'
-        : 'Login failed, please try again');
+      if (err instanceof ApiError && err.status === 403) {
+        // correct credentials, but the email isn't confirmed yet
+        setUnconfirmed(true);
+        setError(err.message);
+      } else {
+        setError(err instanceof ApiError && err.status === 401
+          ? 'Wrong username or password'
+          : 'Login failed, please try again');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -63,6 +72,7 @@ export default function LoginPage() {
               {submitting ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
+          {unconfirmed && <ResendVerification />}
         </CardContent>
         <CardFooter className="auth-footer">
           <span>No account yet? <Link to="/register">Register</Link></span>

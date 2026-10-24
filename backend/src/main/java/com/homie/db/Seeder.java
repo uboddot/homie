@@ -39,6 +39,13 @@ public class Seeder {
                 this.passwordEncoder = passwordEncoder;
         }
 
+        /** Dev users are verified right away, so they can log in without a mail. */
+        private AppUser seedUser(String username, String password, ApplicationUserRole role) {
+                AppUser seeded = new AppUser(username, username + "@homie.local", passwordEncoder.encode(password), role);
+                seeded.setEmailVerified(true);
+                return userRepository.save(seeded);
+        }
+
         /** Alternates the owner between anna and admin and shares every second recipe. */
         private void seedRecipe(Recipe recipe) {
                 recipe.setOwner(seededRecipes % 2 == 0 ? anna : admin);
@@ -60,12 +67,9 @@ public class Seeder {
         @PostConstruct
         public void seed() {
                 // Dev users
-                anna = userRepository.save(new AppUser("anna", "anna@homie.local",
-                                passwordEncoder.encode("password"), ApplicationUserRole.USER));
-                admin = userRepository.save(new AppUser("admin", "admin@homie.local",
-                                passwordEncoder.encode("password123"), ApplicationUserRole.ADMIN));
-                user = userRepository.save(new AppUser("user", "user@homie.local",
-                                passwordEncoder.encode("password"), ApplicationUserRole.USER));
+                anna = seedUser("anna", "password", ApplicationUserRole.USER);
+                admin = seedUser("admin", "password123", ApplicationUserRole.ADMIN);
+                user = seedUser("user", "password", ApplicationUserRole.USER);
 
                 // user's own private recipes, with steps
                 seedOwnRecipe(new Recipe("apple pie", "Delicious homemade apple pie",

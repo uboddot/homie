@@ -9,17 +9,28 @@ services:
       - "8080:8080"
     volumes:
       - ./backend/src:/app/src
+      - ./backend/pom.xml:/app/pom.xml # dependency changes only need a container restart
       - homie-h2-data:/tmp
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - MAIL_HOST=mailpit
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+    depends_on: [mailpit]
+
+  # fake SMTP server: catches every mail the backend sends, inbox at http://localhost:8025
+  mailpit:
+    image: axllent/mailpit
+    container_name: homie-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
   frontend:
     build: 

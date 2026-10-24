@@ -40,6 +40,9 @@ public class AppUser {
     @Column(nullable = false)
     private ApplicationUserRole role;
 
+    @Column(nullable = false)
+    private boolean emailVerified; // login is refused until the link in the verification mail was clicked
+
     public AppUser(String username, String email, String password, ApplicationUserRole role) {
         this.username = username;
         this.email = email;

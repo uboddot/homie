@@ -27,6 +27,7 @@ public class DbUserDetailsService implements UserDetailsService {
                 .username(user.getUsername())
                 .password(user.getPassword())
                 .authorities(user.getRole().getGrantedAuthorities())
+                .disabled(!user.isEmailVerified()) // login then fails with DisabledException
                 .build();
     }
 }

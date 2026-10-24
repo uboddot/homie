@@ -9,6 +9,9 @@ export type Recipe = {
     steps: Step[];
 }
 
+/** How a recipe is displayed, see Components/Recipe/Recipe.tsx */
+export type RecipeView = 'card' | 'list';
+
 export type Step = {
     id: number;
     stepOrder: number;

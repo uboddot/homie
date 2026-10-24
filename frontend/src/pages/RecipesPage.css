@@ -1,6 +1,5 @@
-.recipe-list {
+.recipes-toolbar {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2rem;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
 }

@@ -6,6 +6,16 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  # Mailpit catches all mails, inbox at http://localhost:8025
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: 1025
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
 
 jwt:
   secret: ${JWT_SECRET:lWw8IkAmFS06uIMdppjQ6rbFK0gbSKA0iUshwdD03Zg=}

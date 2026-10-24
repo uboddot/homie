@@ -43,7 +43,8 @@ public class ApplicationSecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // for the H2 console
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/logout",
+                                "/auth/verify-email", "/auth/resend-verification").permitAll()
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         // error dispatches run without the JWT filter, otherwise 403/404 would turn into 401
                         .requestMatchers("/error").permitAll()

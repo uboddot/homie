@@ -1,0 +1,8 @@
+.recipe-details-dialog {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.recipe-details-dialog-title {
+  text-transform: capitalize;
+}

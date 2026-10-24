@@ -1,25 +1,47 @@
 import { useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { ApiError } from '../api/client';
+import ResendVerification from '../Components/ResendVerification';
 import { useAuth } from '../contexts/auth';
 import './AuthPage.css';
 
 export default function RegisterPage() {
   const { user, register } = useAuth();
-  const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   if (user) {
     return <Navigate to="/" replace />;
+  }
+
+  if (sentTo) {
+    return (
+      <div className="auth-page">
+        <Card className="auth-card">
+          <CardHeader>
+            <CardTitle>Check your inbox</CardTitle>
+            <CardDescription>
+              We sent a confirmation link to <strong>{sentTo}</strong>. Open it to activate your account.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResendVerification email={sentTo} />
+          </CardContent>
+          <CardFooter className="auth-footer">
+            <span>Already confirmed? <Link to="/login">Log in</Link></span>
+          </CardFooter>
+        </Card>
+      </div>
+    );
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -28,9 +50,9 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       await register(username, email, password);
-      navigate('/', { replace: true });
+      setSentTo(email);
     } catch (err) {
-      // backend sends readable messages for 400 (validation) and 409 (taken)
+      // backend sends readable messages for 400 (validation), 409 (taken) and 503 (mail failed)
       setError(err instanceof ApiError ? err.message : 'Registration failed, please try again');
     } finally {
       setSubmitting(false);

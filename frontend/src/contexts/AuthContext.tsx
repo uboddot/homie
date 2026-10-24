@@ -27,11 +27,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (username: string, email: string, password: string) => {
-    const registered = await apiFetch<User>('/auth/register', {
+    // the backend only sends the confirmation mail, the user is logged in by verifyEmail
+    await apiFetch<{ message: string }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ username, email, password }),
     });
-    setUser(registered);
+  }, []);
+
+  const verifyEmail = useCallback(async (token: string) => {
+    const verified = await apiFetch<User>('/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+    setUser(verified);
+  }, []);
+
+  const resendVerification = useCallback(async (email: string) => {
+    await apiFetch<{ message: string }>('/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
   }, []);
 
   const logout = useCallback(async () => {
@@ -40,8 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout }),
-    [user, loading, login, register, logout],
+    () => ({ user, loading, login, register, verifyEmail, resendVerification, logout }),
+    [user, loading, login, register, verifyEmail, resendVerification, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

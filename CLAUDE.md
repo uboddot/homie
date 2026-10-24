@@ -23,7 +23,9 @@ Details:
 
 ## Running
 - Docker (both services): `docker compose -f docker-compose.dev.yml up`
+  - `src/` and `pom.xml` of the backend are mounted. After changing dependencies, restart the backend container. After changing the Dockerfile, use `--build`.
 - Locally:
   - Backend: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`. The `dev` profile seeds the dev users and recipes; Docker sets it automatically.
   - Frontend: `cd frontend && npm run dev`
 - The Gemini integration needs the `GOOGLE_API_KEY` env variable.
+- Registration sends a confirmation mail. In dev it lands in Mailpit (inbox: http://localhost:8025). Docker starts it; for local runs, use `docker run -p 1025:1025 -p 8025:8025 axllent/mailpit`.
