@@ -1,6 +1,6 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import './App.css';
-import Header from './Components/Header';
+import Navbar from './Components/Navbar';
 import ProtectedRoute from './Components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -10,7 +10,7 @@ import RecipesPage from './pages/RecipesPage';
 function AppLayout() {
   return (
     <>
-      <Header />
+      <Navbar />
       <main>
         <Outlet />
       </main>

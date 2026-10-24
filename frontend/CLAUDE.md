@@ -17,7 +17,7 @@ TypeScript + React 19 (function components and hooks), built with Vite.
 
 ## Structure (`src/`)
 - `pages/`: route components (+ their `.css`)
-- `Components/`: reusable components (+ their `.css`), e.g. `Header`, `ProtectedRoute`
+- `Components/`: reusable components (+ their `.css`), e.g. `Navbar` (links in its `navLinks` array, Sheet menu on mobile), `ProtectedRoute`
 - `Components/Recipe/`: everything that displays recipes
   - `Recipe.tsx` is the single entry point: `<Recipe recipe view="card" | "list" />`. It picks the display from its `views` map.
   - Views: `RecipeCard`, `RecipeListItem`. All take `RecipeViewProps` (`types.ts`: `recipe`, optional `onSelect`) and spread `selectableProps(recipe, onSelect)` (`selectable.ts`) on their root, so they are clickable and keyboard accessible.
