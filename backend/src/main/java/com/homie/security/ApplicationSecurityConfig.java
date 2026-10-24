@@ -1,82 +1,76 @@
 package com.homie.security;
 
-import static com.homie.security.ApplicationUserPermission.COURSE_WRITE;
+import static com.homie.security.ApplicationUserPermission.RECIPE_ADMIN;
+import static com.homie.security.ApplicationUserPermission.RECIPE_READ;
 
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.homie.jwt.JwtCookieAuthFilter;
 
 @Configuration
 public class ApplicationSecurityConfig {
 
-    private final PasswordEncoder passwordEncoder;
+    private final JwtCookieAuthFilter jwtCookieAuthFilter;
 
-    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
+    public ApplicationSecurityConfig(JwtCookieAuthFilter jwtCookieAuthFilter) {
+        this.jwtCookieAuthFilter = jwtCookieAuthFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // .csrf(csrf ->
-                // csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-                // .cors(cors -> cors.disable())
+                // CSRF is off: the JWT cookie is SameSite=Lax and CORS only allows the frontend origin.
+                // Enable CookieCsrfTokenRepository before deploying anywhere public.
                 .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // for the H2 console
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/css/**", "/js/**").permitAll()
-                        .requestMatchers("/recipes/**").hasRole(ApplicationUserRole.STUDENT.name())
-                        .requestMatchers(HttpMethod.DELETE, "/management/**").hasAuthority(COURSE_WRITE.getPermission())
-                        .requestMatchers(HttpMethod.POST, "/management/**").hasAuthority(COURSE_WRITE.getPermission())
-                        .requestMatchers(HttpMethod.PUT, "/management/**").hasAuthority(COURSE_WRITE.getPermission())
-                        .requestMatchers("/management/**").hasAnyRole(ApplicationUserRole.ADMIN.name())
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/health").permitAll()
+                        // error dispatches run without the JWT filter, otherwise 403/404 would turn into 401
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/recipes/**").hasAuthority(RECIPE_READ.getPermission())
+                        .requestMatchers("/management/**").hasAuthority(RECIPE_ADMIN.getPermission())
                         .anyRequest().authenticated())
-                // .httpBasic(Customizer.withDefaults());
-                .formLogin(form -> form
-                        .defaultSuccessUrl("/recipes", true)
-                        .permitAll())
-                .rememberMe(remember -> remember
-                        .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) // 21 days
-                        .key("somethingverysecured"));
+                .addFilterBefore(jwtCookieAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-    protected UserDetailsService userDetailsService() {
-        UserDetails annaSmithUser = User.builder()
-                .username("annasmith")
-                .password(passwordEncoder.encode("password"))
-                // .roles(ApplicationUserRole.STUDENT.name()) // ROLE_STUDENT
-                .authorities(ApplicationUserRole.STUDENT.getGrantedAuthorities())
-                .build();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 
-        UserDetails lindaUser = User.builder()
-                .username("linda")
-                .password(passwordEncoder.encode("password123"))
-                // .roles(ApplicationUserRole.ADMIN.name()) // ROLE_ADMIN
-                .authorities(ApplicationUserRole.ADMIN.getGrantedAuthorities())
-                .build();
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
-        UserDetails tomUser = User.builder()
-                .username("tom")
-                .password(passwordEncoder.encode("password123"))
-                // .roles(ApplicationUserRole.ADMINTRAINEE.name()) // ROLE_ADMINTRAINEE
-                .authorities(ApplicationUserRole.ADMINTRAINEE.getGrantedAuthorities())
-                .build();
-
-        return new InMemoryUserDetailsManager(
-                annaSmithUser,
-                lindaUser,
-                tomUser);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

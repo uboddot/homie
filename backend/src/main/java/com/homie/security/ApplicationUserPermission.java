@@ -1,10 +1,9 @@
 package com.homie.security;
 
 public enum ApplicationUserPermission {
-    STUDENT_READ("student:read"),
-    STUDENT_WRITE("student:write"),
-    COURSE_READ("course:read"),
-    COURSE_WRITE("course:write");
+    RECIPE_READ("recipe:read"),
+    RECIPE_WRITE("recipe:write"),
+    RECIPE_ADMIN("recipe:admin");
 
     private final String permission;
 

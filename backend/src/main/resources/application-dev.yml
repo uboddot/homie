@@ -1,0 +1,12 @@
+# Local development: activate with SPRING_PROFILES_ACTIVE=dev
+# or ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+# Also enables the Seeder (dev users + sample recipes).
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+jwt:
+  secret: ${JWT_SECRET:lWw8IkAmFS06uIMdppjQ6rbFK0gbSKA0iUshwdD03Zg=}
+  cookie-secure: false # no HTTPS on localhost

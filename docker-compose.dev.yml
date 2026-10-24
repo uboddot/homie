@@ -11,10 +11,11 @@ services:
       - ./backend/src:/app/src
       - homie-h2-data:/tmp
     environment:
+      - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/recipes"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,7 +33,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://backend:8080
+      - VITE_API_URL=http://localhost:8080 # called from the browser, not from the container
       - CHOKIDAR_USEPOLLING=true
     depends_on: [backend]
 

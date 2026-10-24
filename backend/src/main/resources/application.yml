@@ -13,5 +13,11 @@ spring:
     defer-datasource-initialization: true
   h2:
     console:
-      enabled: true
-      path: /h2-console
+      enabled: false
+
+jwt:
+  # base64-encoded, at least 256 bit. Required outside the dev profile.
+  secret: ${JWT_SECRET}
+  expiration-minutes: 60
+  cookie-name: access_token
+  cookie-secure: true

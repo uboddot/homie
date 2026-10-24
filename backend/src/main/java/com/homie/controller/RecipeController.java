@@ -12,21 +12,20 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
 @RequestMapping("/recipes")
-@CrossOrigin(origins = "http://localhost:5173")
 public class RecipeController {
 
     @Autowired
     private RecipeRepository recipeRepository;
 
     @GetMapping
-    public ResponseEntity<List<Recipe>> getRecipes() {
-        return new ResponseEntity<List<Recipe>>(recipeRepository.findAll(), HttpStatus.OK);
+    public ResponseEntity<List<Recipe>> getRecipes(Authentication authentication) {
+        return new ResponseEntity<List<Recipe>>(recipeRepository.findVisibleFor(authentication.getName()), HttpStatus.OK);
     }
 
     @GetMapping("/getRecipeById")

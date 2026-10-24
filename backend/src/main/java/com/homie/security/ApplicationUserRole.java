@@ -10,9 +10,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public enum ApplicationUserRole {
-    STUDENT(Sets.newHashSet(STUDENT_READ, STUDENT_WRITE, COURSE_READ)),
-    ADMIN(Sets.newHashSet(COURSE_READ, COURSE_WRITE, STUDENT_READ, STUDENT_WRITE)),
-    ADMINTRAINEE(Sets.newHashSet(COURSE_READ, STUDENT_READ));
+    USER(Sets.newHashSet(RECIPE_READ, RECIPE_WRITE)),
+    ADMIN(Sets.newHashSet(RECIPE_READ, RECIPE_WRITE, RECIPE_ADMIN));
 
     private final Set<ApplicationUserPermission> permissions;
 
