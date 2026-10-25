@@ -36,7 +36,7 @@ export default function RecipeDetails({ recipe }: { recipe: Recipe }) {
           <tbody>
             {ingredients.map((ingredient, index) => (
               <tr key={index}>
-                <td className="recipe-details-amount">{formatAmount(ingredient.amount)}</td>
+                <td className="recipe-details-amount">{formatAmount(ingredient.amount, ingredient.unit)}</td>
                 <td className="recipe-details-unit">{ingredient.unit ? UNIT_LABELS[ingredient.unit] : ''}</td>
                 <td className="recipe-details-ingredient">{ingredient.name}</td>
               </tr>

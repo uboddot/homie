@@ -13,7 +13,57 @@ const FAMILIES: UnitFamily[] = [
   { units: [['TSP', 1], ['TBSP', 3], ['CUP', 48]], quarters: true },
 ];
 
+/** How precisely an amount is shown: rounded to `step` (`smallStep` below 10), optionally as ¼ ½ ¾. */
+type Precision = { step: number; smallStep?: number; fraction?: boolean };
+
+const WEIGHT_OR_VOLUME: Precision = { step: 1, smallStep: 0.1 };
+const ONE_DECIMAL: Precision = { step: 0.1 };
+const SPOON: Precision = { step: 0.25, fraction: true };
+const COUNT: Precision = { step: 0.5, fraction: true };
+
+/** Display precision per unit; a full Record, so a new unit doesn't compile until it has a row. */
+const PRECISION: Record<IngredientUnit, Precision> = {
+  G: WEIGHT_OR_VOLUME,
+  KG: ONE_DECIMAL,
+  ML: WEIGHT_OR_VOLUME,
+  CL: ONE_DECIMAL,
+  DL: ONE_DECIMAL,
+  L: ONE_DECIMAL,
+  TSP: SPOON,
+  TBSP: SPOON,
+  CUP: SPOON,
+  PINCH: { step: 1 },
+  PIECE: COUNT,
+  CLOVE: COUNT,
+  SLICE: COUNT,
+  CAN: COUNT,
+  BUNCH: COUNT,
+};
+
+const FRACTIONS: Record<number, string> = { 0.25: '¼', 0.5: '½', 0.75: '¾' };
+
 const EPSILON = 1e-9;
+
+/**
+ * The amount rounded for its unit (no unit counts like pieces), never down to 0:
+ * 133.333 g → "133", 2.667 dl → "2.7", 1.333 tsp → "1 ¼", 0.1 pc → "½".
+ */
+export function formatUnitAmount(amount: number, unit: IngredientUnit | null): string {
+  const precision = unit ? PRECISION[unit] : COUNT;
+  const step = precision.smallStep !== undefined && amount < 10 ? precision.smallStep : precision.step;
+  // EPSILON, because e.g. 1.25 / 0.1 is 12.4999… in floating point
+  const rounded = Math.max(step, Math.round(amount / step + EPSILON) * step);
+  if (!precision.fraction) {
+    return new Intl.NumberFormat(undefined, { maximumFractionDigits: step < 1 ? 1 : 0 }).format(rounded);
+  }
+  const whole = Math.floor(rounded + EPSILON);
+  const fraction = FRACTIONS[rounded - whole];
+  if (!fraction) {
+    return String(whole);
+  }
+  // thin space between whole number and fraction: "1 ½"
+  return whole === 0 ? fraction : `${whole}\u2009${fraction}`;
+}
 
 function isQuarter(value: number) {
   return Math.abs(value * 4 - Math.round(value * 4)) < EPSILON;

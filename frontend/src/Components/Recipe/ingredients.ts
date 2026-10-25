@@ -1,4 +1,5 @@
 import type { Ingredient, IngredientUnit } from '../../model/Recipe';
+import { formatUnitAmount } from './units';
 
 /** An ingredient while it's being typed: the amount stays text, so "0." isn't lost mid-input. */
 export type IngredientRow = {
@@ -43,9 +44,7 @@ export function ingredientError(ingredients: Ingredient[]): string | null {
   return null;
 }
 
-const amountFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 });
-
-/** "0.5", "250", or "" without an amount. */
-export function formatAmount(amount: number | null): string {
-  return amount === null ? '' : amountFormat.format(amount);
+/** "250", "1.5", "1 ½" (rounded for the unit, see units.ts), or "" without an amount. */
+export function formatAmount(amount: number | null, unit: IngredientUnit | null): string {
+  return amount === null ? '' : formatUnitAmount(amount, unit);
 }
