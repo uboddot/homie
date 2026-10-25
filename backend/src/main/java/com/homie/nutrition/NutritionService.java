@@ -21,7 +21,12 @@ public class NutritionService {
 
     /** Macros per portion calculated from the ingredients (suggested = true), null if nothing is known. */
     public Nutrition suggest(List<Ingredient> ingredients, int portions) {
-        return calculator.perPortion(ingredients, portions, cache.lookup(ingredients));
+        return suggest(ingredients, portions, true);
+    }
+
+    /** Like {@link #suggest(List, int)}; with useAi false, unknown ingredients aren't asked from the source (Gemini). */
+    public Nutrition suggest(List<Ingredient> ingredients, int portions, boolean useAi) {
+        return calculator.perPortion(ingredients, portions, cache.lookup(ingredients, useAi));
     }
 
     /** Macros per portion as entered by a user (suggested = false), with the calories derived. */

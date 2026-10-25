@@ -9,6 +9,7 @@ import './Navbar.css';
 const navLinks = [
   { to: '/recipes', label: 'Recipes' },
   { to: '/meal-plan', label: 'Meal plan' },
+  { to: '/settings', label: 'Settings' },
 ];
 
 function NavLinks({ className, onNavigate }: { className: string; onNavigate?: () => void }) {

@@ -3,10 +3,10 @@
 Spring Boot 4 REST API (Java, Maven), with JPA, Spring Security, Spring Mail, Lombok, jjwt and Google GenAI.
 
 ## Package layout (`src/main/java/com/homie/`)
-- `controller/`: REST endpoints (`AuthController` `/auth`, `RecipeController` `/recipes`, `RecipeManagementController` `/management/recipes`, `MealPlanController` `/meal-plan`, `HealthController` `/health`). Request/response DTOs live in `controller/dto/`.
-- `model/`: JPA entities (`AppUser`, `EmailVerificationToken`, `Recipe`, `Step`, `MealPlanEntry` + enum `MealSlot`)
+- `controller/`: REST endpoints (`AuthController` `/auth`, `RecipeController` `/recipes`, `RecipeManagementController` `/management/recipes`, `MealPlanController` `/meal-plan`, `SettingsController` `/settings`, `HealthController` `/health`). Request/response DTOs live in `controller/dto/`.
+- `model/`: JPA entities (`AppUser`, `EmailVerificationToken`, `Recipe`, `Step`, `MealPlanEntry` + enum `MealSlot`, `UserSettings` + embeddable `MealTarget`)
 - `repository/`: Spring Data repositories
-- `services/`: business logic and external integrations (`RecipeService`, `MealPlanService`, `EmailVerificationService`, `MailService`, Gemini)
+- `services/`: business logic and external integrations (`RecipeService`, `MealPlanService`, `UserSettingsService`, `EmailVerificationService`, `MailService`, Gemini)
 - `security/`: `ApplicationSecurityConfig` (filter chain, CORS), `DbUserDetailsService` (loads users from the DB), `ApplicationUserRole` / `ApplicationUserPermission` (roles and permissions)
 - `jwt/`: `JwtService` (create/verify tokens, build cookies), `JwtCookieAuthFilter` (authenticates each request from the cookie)
 - `nutrition/`: self-contained module for the macros per portion (entities, repositories and services in one package), see "Nutrition" below
@@ -60,6 +60,14 @@ Conventions:
 - `GET /meal-plan?from=yyyy-mm-dd&to=yyyy-mm-dd` (needs `recipe:read`): entries of that range, both ends inclusive, ordered by date and slot, as `MealPlanDtos.MealPlanEntryResponse` `{ date, slot, recipeId, recipeName }`. `from` after `to`, or more than 400 days (`MealPlanController.MAX_DAYS`) → 400.
 - `PUT /meal-plan` `{ dates, slot, recipeId }` (`SetMealRequest`, needs `recipe:write`): sets the slot to the recipe on every date (several days at once), `recipeId: null` clears it. Returns all entries of those dates afterwards. No dates / more than 400 / no slot → 400. The recipe must be visible to the user (own or shared): unknown → 404, someone else's private recipe → 403.
 - Tests: `MealPlanTests`.
+
+## Settings
+- Table `user_settings` (`UserSettings`, one row per user, `user_id` unique): `use_ai` plus two per-meal targets, `protein` (g, columns `protein_goal/min/max`) and `calories` (kcal, `kcal_goal/min/max`). `MealTarget` is either a `goal`, or a range of `min` and/or `max` (one side alone means "at least" / "at most").
+- A user without a row gets the defaults (`useAi = true`, no targets, `SettingsDto.DEFAULTS`). GET never writes, the first PUT creates the row.
+- `GET /settings` → `SettingsDtos.SettingsDto` `{ useAi, protein, calories }`, where a target is `{ goal, min, max }` or `null`. `PUT /settings` (same body) replaces everything and returns the saved settings. Any logged-in user, always their own settings.
+- Validation (`SettingsController.validate`, 400): goal together with min/max → "Choose either a goal or a range"; a value ≤ 0 → "Targets must be positive"; min > max → "The minimum can't be above the maximum".
+- AI gate: `RecipeService` passes `UserSettingsService.useAi(username)` to `NutritionService.suggest(…, useAi)`, which passes it to `IngredientNutritionCache.lookup(…, fetchMissing)`. With AI off, only cached ingredients count, Gemini is never called, and unknown macros stay null. The overloads without the flag mean "AI on" (used by the `Seeder`).
+- Tests: `SettingsTests`.
 
 ## Nutrition (`com.homie.nutrition`)
 - A recipe has `nutrition` (`Nutrition` embeddable, **per portion**): `{ fat, carbs, protein, calories, suggested }` in grams/kcal, or `null` if nothing could be calculated. Each macro may be null on its own.

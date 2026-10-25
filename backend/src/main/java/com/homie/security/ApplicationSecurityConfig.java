@@ -55,6 +55,8 @@ public class ApplicationSecurityConfig {
                         .requestMatchers("/recipes/**").hasAuthority(RECIPE_READ.getPermission())
                         .requestMatchers(HttpMethod.PUT, "/meal-plan").hasAuthority(RECIPE_WRITE.getPermission())
                         .requestMatchers("/meal-plan/**").hasAuthority(RECIPE_READ.getPermission())
+                        // personal preferences, every logged-in user has their own
+                        .requestMatchers("/settings/**").authenticated()
                         .requestMatchers("/management/**").hasAuthority(RECIPE_ADMIN.getPermission())
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtCookieAuthFilter, UsernamePasswordAuthenticationFilter.class);

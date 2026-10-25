@@ -1,0 +1,35 @@
+.meal-target-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.meal-target-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.meal-target-field-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meal-target-field-inputs input {
+  width: 7rem;
+}
+
+.meal-target-field-unit {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.meal-target-field-hint {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}

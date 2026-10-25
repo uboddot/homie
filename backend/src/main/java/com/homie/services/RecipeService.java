@@ -32,18 +32,20 @@ public class RecipeService {
     private final StepRepository stepRepository;
     private final UserRepository userRepository;
     private final NutritionService nutritionService;
+    private final UserSettingsService settingsService;
 
     public RecipeService(RecipeRepository recipeRepository, StepRepository stepRepository,
-            UserRepository userRepository, NutritionService nutritionService) {
+            UserRepository userRepository, NutritionService nutritionService, UserSettingsService settingsService) {
         this.recipeRepository = recipeRepository;
         this.stepRepository = stepRepository;
         this.userRepository = userRepository;
         this.nutritionService = nutritionService;
+        this.settingsService = settingsService;
     }
 
     /**
      * Saves the recipe with the given user as owner (= creator); steps are numbered in the given order.
-     * Without nutrition in the request, it is suggested from the ingredients.
+     * Without nutrition in the request, it is suggested from the ingredients (Gemini only if the user allows AI).
      */
     @Transactional
     public Recipe create(CreateRecipeRequest request, String username) {
@@ -59,7 +61,7 @@ public class RecipeService {
                 Boolean.TRUE.equals(request.shared()));
         recipe.setNutrition(request.nutrition() != null
                 ? fromUser(request.nutrition())
-                : nutritionService.suggest(ingredients, portions));
+                : nutritionService.suggest(ingredients, portions, settingsService.useAi(username)));
         recipe = recipeRepository.save(recipe);
 
         saveSteps(recipe, nonBlank(request.steps()));
@@ -87,7 +89,7 @@ public class RecipeService {
         if (request.nutrition() != null) {
             recipe.setNutrition(fromUser(request.nutrition()));
         } else if (!keepSuggestion) {
-            recipe.setNutrition(nutritionService.suggest(ingredients, portions));
+            recipe.setNutrition(nutritionService.suggest(ingredients, portions, settingsService.useAi(username)));
         }
 
         recipe.setName(request.name().trim());

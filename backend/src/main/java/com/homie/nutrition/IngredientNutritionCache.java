@@ -62,6 +62,12 @@ public class IngredientNutritionCache {
     /** Loads the cached data for all ingredients with an amount; asks the source once for the rest and stores it. */
     @Transactional
     public Lookup lookup(List<Ingredient> ingredients) {
+        return lookup(ingredients, true);
+    }
+
+    /** Like {@link #lookup(List)}, but with fetchMissing false only the cache is used and the source is never asked. */
+    @Transactional
+    public Lookup lookup(List<Ingredient> ingredients, boolean fetchMissing) {
         List<Ingredient> measured = ingredients.stream().filter(i -> i.getAmount() != null).toList();
         Set<String> names = new HashSet<>(measured.stream().map(i -> normalize(i.getName())).toList());
         Set<UnitKey> units = new HashSet<>(measured.stream()
@@ -78,7 +84,7 @@ public class IngredientNutritionCache {
         missingNames.removeAll(nutrition.keySet());
         Set<UnitKey> missingUnits = new HashSet<>(units);
         missingUnits.removeAll(unitWeights.keySet());
-        if (missingNames.isEmpty() && missingUnits.isEmpty()) {
+        if (!fetchMissing || (missingNames.isEmpty() && missingUnits.isEmpty())) {
             return new Lookup(nutrition, unitWeights);
         }
 

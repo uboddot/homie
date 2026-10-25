@@ -9,6 +9,7 @@ import VerifyEmailPage from './pages/VerifyEmailPage';
 import HomePage from './pages/HomePage';
 import RecipesPage from './pages/RecipesPage';
 import MealPlanPage from './pages/MealPlanPage';
+import SettingsPage from './pages/SettingsPage';
 
 function AppLayout() {
   return (
@@ -34,6 +35,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/recipes" element={<RecipesPage />} />
             <Route path="/meal-plan" element={<MealPlanPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
 

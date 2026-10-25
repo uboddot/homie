@@ -44,15 +44,16 @@ TypeScript + React 19 (function components and hooks), built with Vite.
   - `dates.ts`: date keys (`yyyy-mm-dd`, local time, compare as strings), formatting and `buildCalendar(today, back, ahead)` (whole weeks around the chosen range). `selection.ts`: `clickDay` (click / Ctrl-⌘ toggle / Shift range from the anchor). `meals.ts`: entries grouped per date, `slotValue` (shared value or "mixed" across selected days).
   - `MealDayPanel`: today's meals while nothing is selected, otherwise a `RecipePicker` per slot for all selected days, plus Clear and a "Recipe" button that opens `RecipeDetailsDialog`.
   - `RecipePicker`: combobox (shadcn `Popover` + `Command`/cmdk) that filters the visible recipes by name as you type. Items are keyed by id (names can repeat), so `Command` gets a custom `filter` on the name keyword. Esc inside it only closes the dropdown.
+- `Components/Settings/`: `MealTargetField` (a per-meal target with a Goal | Range `ToggleGroup`, then one goal input or min–max inputs). `mealTarget.ts` keeps the values as text (`MealTargetRow`), converts them (only the chosen mode's values are sent, all empty → `null`) and mirrors the backend validation.
 - `Components/ui/`: generated shadcn components
 - `api/client.ts`: `apiFetch<T>()`, the only place that calls `fetch`
 - `contexts/`: `AuthContext.tsx` (`AuthProvider`) + `auth.ts` (`useAuth()`)
-- `model/`: TypeScript types that mirror backend DTOs/entities (`Recipe`, `User`, `MealPlan`)
+- `model/`: TypeScript types that mirror backend DTOs/entities (`Recipe`, `User`, `MealPlan`, `Settings`)
 - `lib/utils.ts`: shadcn `cn()` helper
 
 ## Routing & auth
 - `react-router-dom`. Routes are in `App.tsx`. Pages that need a login go inside the `<ProtectedRoute />` route (it redirects to `/login`).
-- Protected routes: `/` → `HomePage` (placeholder, links to recipes), `/recipes` → `RecipesPage`, `/meal-plan` → `MealPlanPage`. Unknown paths redirect to `/`.
+- Protected routes: `/` → `HomePage` (placeholder, links to recipes), `/recipes` → `RecipesPage`, `/meal-plan` → `MealPlanPage`, `/settings` → `SettingsPage`. Unknown paths redirect to `/`.
 - The JWT is an HttpOnly cookie set by the backend, so JS never sees or stores it. `AuthProvider` restores the user on startup via `GET /auth/me`.
 - Use `useAuth()` for `user`, `login`, `register`, `verifyEmail`, `resendVerification` and `logout`.
 - Email confirmation: `register` doesn't log in. `RegisterPage` then shows "check your inbox". The mail links to `/verify-email?token=…` (`VerifyEmailPage`, public route), which calls `verifyEmail` once (guarded with a ref against StrictMode's double effect, because tokens are one-time) and then goes to `/`. Login with an unconfirmed email returns 403. `LoginPage` then shows `ResendVerification` (`Components/ResendVerification.tsx`).
@@ -60,6 +61,9 @@ TypeScript + React 19 (function components and hooks), built with Vite.
 ## Meal plan page
 - `MealPlanPage` loads `GET /recipes` once and `GET /meal-plan` for the whole calendar grid whenever the range changes. The "Look back" / "Plan ahead" choice is remembered in localStorage (`homie.mealPlanRange`).
 - Picking or clearing calls `PUT /meal-plan` for all selected days and replaces those days' entries with the answer. Errors show as a toast. Esc clears the selection.
+
+## Settings page
+- `SettingsPage` loads `GET /settings` and saves everything with `PUT /settings`. It has a "Use AI features" `Switch` (off: the backend never asks Gemini for this user) and the per-meal protein (g) and calories (kcal) targets. Validation errors show inline, and success shows a toast.
 
 ## Backend API
 - Always go through `apiFetch` (base URL `VITE_API_URL`, default `http://localhost:8080`, `credentials: 'include'`). It throws `ApiError` with `status`.
