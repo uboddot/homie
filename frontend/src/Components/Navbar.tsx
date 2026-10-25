@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/auth';
 import './Navbar.css';
 
 const navLinks = [
-  { to: '/', label: 'Recipes' },
+  { to: '/recipes', label: 'Recipes' },
 ];
 
 function NavLinks({ className, onNavigate }: { className: string; onNavigate?: () => void }) {
