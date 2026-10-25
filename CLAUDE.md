@@ -24,6 +24,7 @@ Details:
 ## Running
 - Docker (both services): `docker compose -f docker-compose.dev.yml up`
   - `src/` and `pom.xml` of the backend are mounted. After changing dependencies, restart the backend container. After changing the Dockerfile, use `--build`.
+  - Maven and its dependencies are baked into the image and cached in the `homie-m2` volume (compiled classes in `homie-backend-target`), so only the first start downloads them. To reset the cache: `docker compose -f docker-compose.dev.yml down` and `docker volume rm homie_homie-m2 homie_homie-backend-target`.
 - Locally:
   - Backend: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`. The `dev` profile seeds the dev users and recipes; Docker sets it automatically.
   - Frontend: `cd frontend && npm run dev`

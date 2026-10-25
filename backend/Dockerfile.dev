@@ -4,13 +4,16 @@ WORKDIR /app
 
 COPY mvnw .
 COPY .mvn .mvn
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
+
+# dependencies (and the Maven distribution) in their own layer: only rebuilt when pom.xml changes
 COPY pom.xml .
+RUN ./mvnw -B dependency:go-offline
 
+# src is mounted in docker-compose.dev.yml; copied too so the image also works on its own
 COPY src ./src
-
-RUN chmod +x mvnw
-RUN sed -i 's/\r$//' mvnw
 
 EXPOSE 8080
 
-CMD [ "./mvnw", "spring-boot:run" ]
+# TieredStopAtLevel=1: less JIT work, faster startup (dev only)
+CMD [ "./mvnw", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-XX:TieredStopAtLevel=1" ]

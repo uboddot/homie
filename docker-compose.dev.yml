@@ -11,6 +11,8 @@ services:
       - ./backend/src:/app/src
       - ./backend/pom.xml:/app/pom.xml # dependency changes only need a container restart
       - homie-h2-data:/tmp
+      - homie-m2:/root/.m2 # Maven + dependencies, kept across container recreates
+      - homie-backend-target:/app/target # compiled classes, so restarts compile incrementally
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
@@ -50,3 +52,5 @@ services:
 
 volumes:
   homie-h2-data:
+  homie-m2:
+  homie-backend-target:
