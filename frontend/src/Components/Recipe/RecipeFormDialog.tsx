@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
@@ -6,6 +7,7 @@ import { Label } from '@/Components/ui/label';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
 import { apiFetch, ApiError } from '../../api/client';
+import LoadingBorder from '../LoadingBorder';
 import type { Recipe, RecipeInput } from '../../model/Recipe';
 import EditableList from './EditableList';
 import IngredientList from './IngredientList';
@@ -87,6 +89,13 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
         : await apiFetch<Recipe>('/recipes', { method: 'POST', body: JSON.stringify(body) });
       onSaved(saved);
       onOpenChange(false);
+      if (recipe) {
+        toast.success(`"${saved.name}" saved`);
+      } else {
+        toast.success(`"${saved.name}" created`, {
+          description: saved.nutrition ? undefined : "Nutrition info couldn't be calculated.",
+        });
+      }
     } catch (err) {
       setError(err instanceof ApiError && err.status === 401
         ? 'Your session has expired, please log in again'
@@ -151,9 +160,14 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? 'Saving...' : recipe ? 'Save changes' : 'Create recipe'}
-            </Button>
+            {/* creating waits for the backend's nutrition lookup (Gemini), which can take a few seconds */}
+            <LoadingBorder active={submitting}>
+              <Button type="submit" disabled={submitting}>
+                {submitting
+                  ? recipe ? 'Saving...' : 'Extracting nutrition info...'
+                  : recipe ? 'Save changes' : 'Create recipe'}
+              </Button>
+            </LoadingBorder>
           </DialogFooter>
         </form>
       </DialogContent>

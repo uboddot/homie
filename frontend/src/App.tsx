@@ -1,4 +1,5 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { Toaster } from '@/Components/ui/sonner';
 import './App.css';
 import Navbar from './Components/Navbar';
 import ProtectedRoute from './Components/ProtectedRoute';
@@ -21,20 +22,24 @@ function AppLayout() {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/verify-email" element={<VerifyEmailPage />} />
+    <>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
-      <Route element={<ProtectedRoute />}>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/recipes" element={<RecipesPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/recipes" element={<RecipesPage />} />
+          </Route>
         </Route>
-      </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      {/* light: the app has no dark mode, so toasts shouldn't follow the OS theme */}
+      <Toaster position="bottom-right" theme="light" />
+    </>
   )
 }
 

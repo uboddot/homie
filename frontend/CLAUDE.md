@@ -17,7 +17,11 @@ TypeScript + React 19 (function components and hooks), built with Vite.
 
 ## Structure (`src/`)
 - `pages/`: route components (+ their `.css`)
-- `Components/`: reusable components (+ their `.css`), e.g. `Navbar` (links in its `navLinks` array, Sheet menu on mobile), `ProtectedRoute`
+- `Components/`: reusable components (+ their `.css`), e.g. `Navbar` (links in its `navLinks` array, Sheet menu on mobile), `ProtectedRoute`, `LoadingBorder`
+  - `LoadingBorder` wraps e.g. a button: `<LoadingBorder active={busy}><Button disabled={busy} …/></LoadingBorder>`. While active, an arc runs round its border (static ring with reduced motion). The ring takes no layout space, and a disabled shadcn button inside isn't faded.
+- Toasts: shadcn `sonner` (`ui/sonner.tsx`), mounted once in `App.tsx` as `<Toaster position="bottom-right" theme="light" />`.
+  - Show infos with `toast.success(...)` / `toast.info(...)` from `sonner`.
+  - Form errors stay inline in their form.
 - `Components/Recipe/`: everything that displays recipes
   - `Recipe.tsx` is the single entry point: `<Recipe recipe view="card" | "list" />`. It picks the display from its `views` map.
   - Views: `RecipeCard`, `RecipeListItem`. All take `RecipeViewProps` (`types.ts`: `recipe`, optional `onSelect`) and spread `selectableProps(recipe, onSelect)` (`selectable.ts`) on their root, so they are clickable and keyboard accessible.
@@ -32,6 +36,8 @@ TypeScript + React 19 (function components and hooks), built with Vite.
     - The form field is `NutritionFields` (fat, carbs and protein as text, plus a kcal preview from `calories()` in `nutrition.ts`, which mirrors the backend formula; the saved kcal always comes from the backend).
     - `RecipeFormDialog` sends `nutrition` only once the user has changed a value (`nutritionTouched`) or when the values were already the user's own. Otherwise it sends `null`, and the backend suggests values, or keeps the current suggestion if the ingredients are unchanged.
     - Emptying all three fields sends `null` too, which goes back to a suggestion.
+    - Creating waits for the backend's Gemini lookup. Meanwhile the submit button reads "Extracting nutrition info..." inside a `LoadingBorder` (an edit reads "Saving...").
+    - On success, a toast confirms it ("… created" / "… saved"). If a new recipe got no nutrition, the toast adds "Nutrition info couldn't be calculated."
   - Pages use `Recipe`/`RecipeCollection`, never a specific view directly.
 - `Components/ui/`: generated shadcn components
 - `api/client.ts`: `apiFetch<T>()`, the only place that calls `fetch`

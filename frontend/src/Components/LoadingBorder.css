@@ -1,0 +1,44 @@
+/* animatable angle of the arc; a plain custom property can't be animated */
+@property --loading-border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* the 2px ring lies outside the wrapped element (negative margin), so it takes no layout space */
+.loading-border {
+  display: inline-flex;
+  padding: 2px;
+  margin: -2px;
+  border-radius: calc(var(--radius) + 2px);
+}
+
+/* fill the wrapper when a layout stretches it, e.g. the full-width dialog footer on mobile */
+.loading-border > * {
+  flex: 1;
+}
+
+.loading-border--active {
+  background: conic-gradient(from var(--loading-border-angle),
+      transparent 0 60%, var(--primary) 90%, transparent);
+  animation: loading-border-spin 1.2s linear infinite;
+  cursor: progress; /* on the wrapper: a disabled button ignores the pointer */
+}
+
+/* the wrapped button stays disabled (no double submit) but shouldn't look faded */
+.loading-border--active > [data-slot="button"]:disabled {
+  opacity: 1;
+}
+
+@keyframes loading-border-spin {
+  to {
+    --loading-border-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-border--active {
+    animation: none;
+    background: var(--primary);
+  }
+}
