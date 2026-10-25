@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.homie.controller.dto.RecipeDtos.CreateRecipeRequest;
+import com.homie.controller.dto.RecipeDtos.IngredientRequest;
 import com.homie.model.AppUser;
+import com.homie.model.Ingredient;
 import com.homie.model.Recipe;
 import com.homie.model.Step;
 import com.homie.repository.RecipeRepository;
@@ -38,7 +40,7 @@ public class RecipeService {
         int preparationTime = request.preparationTime() == null ? 0 : request.preparationTime();
 
         Recipe recipe = recipeRepository.save(new Recipe(request.name().trim(), description,
-                nonBlank(request.ingredients()), preparationTime, owner, Boolean.TRUE.equals(request.shared())));
+                ingredients(request.ingredients()), preparationTime, owner, Boolean.TRUE.equals(request.shared())));
 
         saveSteps(recipe, nonBlank(request.steps()));
         return recipe;
@@ -58,7 +60,7 @@ public class RecipeService {
 
         recipe.setName(request.name().trim());
         recipe.setDescription(request.description() == null ? "" : request.description().trim());
-        recipe.setIngredients(nonBlank(request.ingredients()));
+        recipe.setIngredients(ingredients(request.ingredients()));
         recipe.setPreparationTime(request.preparationTime() == null ? 0 : request.preparationTime());
         recipe.setShared(Boolean.TRUE.equals(request.shared()));
 
@@ -75,6 +77,19 @@ public class RecipeService {
         }
         // set directly, so the response contains the steps without reloading the recipe
         recipe.setSteps(steps);
+    }
+
+    /** Ingredients with trimmed names, without the completely empty rows the form may send. */
+    public static List<Ingredient> ingredients(List<IngredientRequest> values) {
+        if (values == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(values.stream()
+                .filter(value -> value != null)
+                .map(value -> new Ingredient(value.amount(), value.unit(),
+                        value.name() == null ? "" : value.name().trim()))
+                .filter(i -> i.getAmount() != null || i.getUnit() != null || !i.getName().isEmpty())
+                .toList());
     }
 
     /** Trimmed entries without the empty rows the form may send. */

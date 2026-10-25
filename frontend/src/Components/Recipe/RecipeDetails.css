@@ -14,9 +14,34 @@
   font-weight: 600;
 }
 
+/* table, so amounts, units and ingredients each line up in their own column */
 .recipe-details-ingredients {
-  list-style: disc;
-  padding-left: 1.25rem;
+  border-collapse: collapse;
+}
+
+.recipe-details-ingredients tr + tr {
+  border-top: 1px solid var(--border);
+}
+
+.recipe-details-ingredients td {
+  padding-block: 0.3rem;
+  vertical-align: baseline;
+}
+
+.recipe-details-amount {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  padding-right: 0.35rem;
+}
+
+.recipe-details-unit {
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  padding-right: 1rem;
+}
+
+.recipe-details-ingredient {
   text-transform: capitalize;
 }
 

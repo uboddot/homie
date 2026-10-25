@@ -12,6 +12,7 @@ import com.homie.controller.dto.AuthDtos.ErrorResponse;
 import com.homie.controller.dto.RecipeDtos.CreateRecipeRequest;
 import com.homie.repository.RecipeRepository;
 import com.homie.services.RecipeService;
+import com.homie.model.Ingredient;
 import com.homie.model.Recipe;
 
 import java.util.List;
@@ -74,8 +75,20 @@ public class RecipeController {
         if (request.preparationTime() != null && request.preparationTime() < 0) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Preparation time can't be negative"));
         }
-        if (RecipeService.nonBlank(request.ingredients()).isEmpty()) {
+        List<Ingredient> ingredients = RecipeService.ingredients(request.ingredients());
+        if (ingredients.isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Add at least one ingredient"));
+        }
+        for (Ingredient ingredient : ingredients) {
+            if (ingredient.getAmount() != null && ingredient.getAmount().signum() <= 0) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("Amounts must be positive"));
+            }
+            if (ingredient.getUnit() != null && ingredient.getAmount() == null) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("A unit needs an amount"));
+            }
+            if (ingredient.getName().isEmpty()) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("Every amount needs an ingredient"));
+            }
         }
         return null;
     }

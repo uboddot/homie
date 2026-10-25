@@ -24,13 +24,13 @@ class RecipeUpdateTests {
 
     private static final String RECIPE = """
             {"name":"toast","description":"Quick snack","preparationTime":5,
-             "ingredients":["bread","butter"],"steps":["Toast the bread.","Spread the butter."],
+             "ingredients":[{"amount":2,"unit":"SLICE","name":"bread"},{"name":"butter"}],"steps":["Toast the bread.","Spread the butter."],
              "shared":false}
             """;
 
     private static final String EDITED = """
             {"name":" jam toast ","description":"Sweeter","preparationTime":7,
-             "ingredients":["bread","","jam"],"steps":["  ","Spread the jam."],
+             "ingredients":[{"amount":1,"unit":"SLICE","name":"bread"},{"name":" "},{"amount":2,"unit":"TBSP","name":" jam "}],"steps":["  ","Spread the jam."],
              "shared":true}
             """;
 
@@ -64,6 +64,9 @@ class RecipeUpdateTests {
                 .andExpect(jsonPath("$.shared").value(true))
                 .andExpect(jsonPath("$.ownerUsername").value("anna"))
                 .andExpect(jsonPath("$.ingredients.length()").value(2))
+                .andExpect(jsonPath("$.ingredients[1].amount").value(2))
+                .andExpect(jsonPath("$.ingredients[1].unit").value("TBSP"))
+                .andExpect(jsonPath("$.ingredients[1].name").value("jam"))
                 .andExpect(jsonPath("$.steps.length()").value(1))
                 .andExpect(jsonPath("$.steps[0].stepOrder").value(1))
                 .andExpect(jsonPath("$.steps[0].instruction").value("Spread the jam."));
@@ -91,7 +94,7 @@ class RecipeUpdateTests {
         long id = createAsAnna(anna);
 
         mockMvc.perform(put("/recipes/" + id).cookie(anna).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\" \",\"ingredients\":[\"bread\"]}"))
+                .content("{\"name\":\" \",\"ingredients\":[{\"name\":\"bread\"}]}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Name is required"));
     }

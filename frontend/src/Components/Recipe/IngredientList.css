@@ -1,0 +1,33 @@
+.ingredient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ingredient-list legend {
+  margin-bottom: 0.5rem;
+}
+
+/* same columns in every row, so amounts, units and ingredients line up */
+.ingredient-list-row {
+  display: grid;
+  grid-template-columns: 5rem 6.5rem 1fr 2rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ingredient-list-header {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.ingredient-list-unit {
+  width: 100%;
+}
+
+.ingredient-list-add {
+  align-self: flex-start;
+}

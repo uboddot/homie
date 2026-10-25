@@ -2,6 +2,8 @@ package com.homie.model;
 
 import java.util.List;
 
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -41,7 +44,13 @@ public class Recipe {
     @OneToMany(mappedBy = "recipe", fetch = FetchType.LAZY)
     private List<Step> steps;
 
-    private List<String> ingredients;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ElementCollection
+    @CollectionTable(name = "recipe_ingredient", joinColumns = @JoinColumn(name = "recipe_id"))
+    @OrderColumn(name = "position")
+    private List<Ingredient> ingredients;
+
     private int preparationTime; // in minutes
 
     @JsonIgnore
@@ -52,14 +61,14 @@ public class Recipe {
 
     private boolean shared; // visible to all users, not only the owner
 
-    public Recipe(String name, String description, List<String> ingredients, int preparationTime) {
+    public Recipe(String name, String description, List<Ingredient> ingredients, int preparationTime) {
         this.name = name;
         this.description = description;
         this.ingredients = ingredients;
         this.preparationTime = preparationTime;
     }
 
-    public Recipe(String name, String description, List<String> ingredients, int preparationTime,
+    public Recipe(String name, String description, List<Ingredient> ingredients, int preparationTime,
             AppUser owner, boolean shared) {
         this(name, description, ingredients, preparationTime);
         this.owner = owner;

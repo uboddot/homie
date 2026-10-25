@@ -14,7 +14,7 @@ type EditableListProps = {
   ordered?: boolean; // numbers the rows, e.g. for steps
 };
 
-/** Form field for a list of texts (ingredients, steps): one input per row, rows can be added and removed. */
+/** Form field for a list of texts (e.g. steps): one input per row, rows can be added and removed. */
 export default function EditableList({ id, label, items, onChange, placeholder, addLabel = 'Add', ordered = false }: EditableListProps) {
   function update(index: number, value: string) {
     onChange(items.map((item, i) => (i === index ? value : item)));

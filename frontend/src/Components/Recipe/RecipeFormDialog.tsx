@@ -8,6 +8,8 @@ import { Textarea } from '@/Components/ui/textarea';
 import { apiFetch, ApiError } from '../../api/client';
 import type { Recipe, RecipeInput } from '../../model/Recipe';
 import EditableList from './EditableList';
+import IngredientList from './IngredientList';
+import { emptyIngredientRow, ingredientError, toIngredientRows, toIngredients, type IngredientRow } from './ingredients';
 import './RecipeFormDialog.css';
 
 type RecipeFormDialogProps = {
@@ -19,8 +21,8 @@ type RecipeFormDialogProps = {
 };
 
 /** At least one (empty) row, so the list always shows an input. */
-function withRow(items: string[]) {
-  return items.length > 0 ? items : [''];
+function withRow<T>(items: T[], empty: T) {
+  return items.length > 0 ? items : [empty];
 }
 
 /** Modal form to create or edit a recipe; the backend makes the logged-in user the owner of a new one. */
@@ -28,7 +30,7 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [preparationTime, setPreparationTime] = useState('');
-  const [ingredients, setIngredients] = useState<string[]>(['']);
+  const [ingredients, setIngredients] = useState<IngredientRow[]>([emptyIngredientRow]);
   const [steps, setSteps] = useState<string[]>(['']);
   const [shared, setShared] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +44,8 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
     setName(recipe?.name ?? '');
     setDescription(recipe?.description ?? '');
     setPreparationTime(recipe ? String(recipe.preparationTime) : '');
-    setIngredients(withRow(recipe?.ingredients ?? []));
-    setSteps(withRow(recipe?.steps.map(s => s.instruction) ?? []));
+    setIngredients(withRow(toIngredientRows(recipe?.ingredients ?? []), emptyIngredientRow));
+    setSteps(withRow(recipe?.steps.map(s => s.instruction) ?? [], ''));
     setShared(recipe?.shared ?? false);
     setError(null);
   }, [open, recipe]);
@@ -56,12 +58,13 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
       name: name.trim(),
       description: description.trim(),
       preparationTime: preparationTime === '' ? null : Number(preparationTime),
-      ingredients: ingredients.map(i => i.trim()).filter(Boolean),
+      ingredients: toIngredients(ingredients),
       steps: steps.map(s => s.trim()).filter(Boolean),
       shared,
     };
-    if (body.ingredients.length === 0) {
-      setError('Add at least one ingredient');
+    const invalid = ingredientError(body.ingredients);
+    if (invalid) {
+      setError(invalid);
       return;
     }
 
@@ -111,8 +114,7 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
               value={preparationTime} onChange={e => setPreparationTime(e.target.value)} />
           </div>
 
-          <EditableList id="recipe-ingredient" label="Ingredients" items={ingredients} onChange={setIngredients}
-            placeholder="e.g. 200 g flour" addLabel="Add ingredient" />
+          <IngredientList rows={ingredients} onChange={setIngredients} />
 
           <EditableList id="recipe-step" label="Steps" items={steps} onChange={setSteps}
             placeholder="What to do next" addLabel="Add step" ordered />

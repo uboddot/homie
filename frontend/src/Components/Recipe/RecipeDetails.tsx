@@ -1,4 +1,5 @@
-import type { Recipe } from '../../model/Recipe';
+import { UNIT_LABELS, type Recipe } from '../../model/Recipe';
+import { formatAmount } from './ingredients';
 import './RecipeDetails.css';
 
 /** Full information of a recipe: meta, ingredients and steps. */
@@ -13,9 +14,17 @@ export default function RecipeDetails({ recipe }: { recipe: Recipe }) {
 
       <section>
         <h3 className="recipe-details-heading">Ingredients</h3>
-        <ul className="recipe-details-ingredients">
-          {recipe.ingredients.map(ingredient => <li key={ingredient}>{ingredient}</li>)}
-        </ul>
+        <table className="recipe-details-ingredients">
+          <tbody>
+            {recipe.ingredients.map((ingredient, index) => (
+              <tr key={index}>
+                <td className="recipe-details-amount">{formatAmount(ingredient.amount)}</td>
+                <td className="recipe-details-unit">{ingredient.unit ? UNIT_LABELS[ingredient.unit] : ''}</td>
+                <td className="recipe-details-ingredient">{ingredient.name}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
 
       <section>
