@@ -53,6 +53,8 @@ public class ApplicationSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/recipes").hasAuthority(RECIPE_WRITE.getPermission())
                         .requestMatchers(HttpMethod.PUT, "/recipes/**").hasAuthority(RECIPE_WRITE.getPermission())
                         .requestMatchers("/recipes/**").hasAuthority(RECIPE_READ.getPermission())
+                        .requestMatchers(HttpMethod.PUT, "/meal-plan").hasAuthority(RECIPE_WRITE.getPermission())
+                        .requestMatchers("/meal-plan/**").hasAuthority(RECIPE_READ.getPermission())
                         .requestMatchers("/management/**").hasAuthority(RECIPE_ADMIN.getPermission())
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtCookieAuthFilter, UsernamePasswordAuthenticationFilter.class);

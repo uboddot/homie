@@ -15,6 +15,7 @@ import static com.homie.model.IngredientUnit.TBSP;
 import static com.homie.model.IngredientUnit.TSP;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.annotation.PostConstruct;
@@ -26,6 +27,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.homie.model.AppUser;
 import com.homie.model.Ingredient;
 import com.homie.model.IngredientUnit;
+import com.homie.model.MealPlanEntry;
+import com.homie.model.MealSlot;
 import com.homie.model.Recipe;
 import com.homie.model.Step;
 import com.homie.nutrition.IngredientNutrition;
@@ -33,6 +36,7 @@ import com.homie.nutrition.IngredientNutritionRepository;
 import com.homie.nutrition.IngredientUnitWeight;
 import com.homie.nutrition.IngredientUnitWeightRepository;
 import com.homie.nutrition.NutritionService;
+import com.homie.repository.MealPlanEntryRepository;
 import com.homie.repository.RecipeRepository;
 import com.homie.repository.StepRepository;
 import com.homie.repository.UserRepository;
@@ -50,6 +54,7 @@ public class Seeder {
         private final IngredientNutritionRepository ingredientNutritionRepository;
         private final IngredientUnitWeightRepository unitWeightRepository;
         private final NutritionService nutritionService;
+        private final MealPlanEntryRepository mealPlanEntryRepository;
 
         private AppUser anna;
         private AppUser admin;
@@ -59,7 +64,8 @@ public class Seeder {
         public Seeder(RecipeRepository recipeRepository, StepRepository stepRepository,
                         UserRepository userRepository, PasswordEncoder passwordEncoder,
                         IngredientNutritionRepository ingredientNutritionRepository,
-                        IngredientUnitWeightRepository unitWeightRepository, NutritionService nutritionService) {
+                        IngredientUnitWeightRepository unitWeightRepository, NutritionService nutritionService,
+                        MealPlanEntryRepository mealPlanEntryRepository) {
                 this.recipeRepository = recipeRepository;
                 this.stepRepository = stepRepository;
                 this.userRepository = userRepository;
@@ -67,6 +73,7 @@ public class Seeder {
                 this.ingredientNutritionRepository = ingredientNutritionRepository;
                 this.unitWeightRepository = unitWeightRepository;
                 this.nutritionService = nutritionService;
+                this.mealPlanEntryRepository = mealPlanEntryRepository;
         }
 
         /** Dev users are verified right away, so they can log in without a mail. */
@@ -88,7 +95,7 @@ public class Seeder {
          * Private recipe of the given owner, steps are numbered in the given order. Its ingredients are all in the
          * seeded nutrition cache, so the suggestion is calculated without asking Gemini.
          */
-        private void seedOwnRecipe(Recipe recipe, AppUser owner, String... steps) {
+        private Recipe seedOwnRecipe(Recipe recipe, AppUser owner, String... steps) {
                 recipe.setOwner(owner);
                 recipe.setShared(false);
                 recipe.setNutrition(nutritionService.suggest(recipe.getIngredients(), recipe.getPortions()));
@@ -96,6 +103,12 @@ public class Seeder {
                 for (int i = 0; i < steps.length; i++) {
                         stepRepository.save(new Step(recipe, i + 1, steps[i]));
                 }
+                return recipe;
+        }
+
+        /** Planned meal of user, `days` from today (negative = already eaten). */
+        private void seedMeal(int days, MealSlot slot, Recipe recipe) {
+                mealPlanEntryRepository.save(new MealPlanEntry(user, LocalDate.now().plusDays(days), slot, recipe));
         }
 
         private static Ingredient ingredient(String amount, IngredientUnit unit, String name) {
@@ -156,7 +169,7 @@ public class Seeder {
                 seedUnitWeight("paprika", TSP, "2.3");
 
                 // user's own private recipes, with steps
-                seedOwnRecipe(new Recipe("apple pie", "Delicious homemade apple pie",
+                Recipe applePie = seedOwnRecipe(new Recipe("apple pie", "Delicious homemade apple pie",
                                 List.of(ingredient("4", PIECE, "apples"), ingredient("250", G, "flour"),
                                                 ingredient("100", G, "sugar"), ingredient("125", G, "butter"),
                                                 ingredient("1", TSP, "cinnamon")), 60, 8), user,
@@ -165,7 +178,7 @@ public class Seeder {
                                 "Peel and slice the apples, toss with sugar and cinnamon.",
                                 "Line a pie dish with half the dough, add the apples and cover with the rest.",
                                 "Bake for 45 minutes until golden brown.");
-                seedOwnRecipe(new Recipe("pasta aglio e olio", "Simple spaghetti with garlic and olive oil",
+                Recipe pasta = seedOwnRecipe(new Recipe("pasta aglio e olio", "Simple spaghetti with garlic and olive oil",
                                 List.of(ingredient("200", G, "spaghetti"), ingredient("3", CLOVE, "garlic"),
                                                 ingredient("4", TBSP, "olive oil"), ingredient("1", PINCH, "chili flakes"),
                                                 ingredient("1", BUNCH, "parsley")), 20, 2), user,
@@ -173,7 +186,7 @@ public class Seeder {
                                 "Gently fry sliced garlic and chili flakes in olive oil until lightly golden.",
                                 "Toss the drained spaghetti in the oil with a splash of pasta water.",
                                 "Finish with chopped parsley and serve immediately.");
-                seedOwnRecipe(new Recipe("shakshuka", "Eggs poached in a spiced tomato sauce",
+                Recipe shakshuka = seedOwnRecipe(new Recipe("shakshuka", "Eggs poached in a spiced tomato sauce",
                                 List.of(ingredient("4", PIECE, "eggs"), ingredient("1", CAN, "tomatoes"),
                                                 ingredient("1", PIECE, "bell pepper"), ingredient("1", PIECE, "onion"),
                                                 ingredient("1", TSP, "cumin"), ingredient("1", TSP, "paprika")), 30, 2), user,
@@ -182,6 +195,21 @@ public class Seeder {
                                 "Make small wells in the sauce and crack an egg into each.",
                                 "Cover and cook until the egg whites are set, about 6 minutes.",
                                 "Serve hot with bread.");
+
+                // user's meal plan: a few eaten days and some planned ones
+                seedMeal(-6, MealSlot.DINNER, pasta);
+                seedMeal(-5, MealSlot.BREAKFAST, shakshuka);
+                seedMeal(-5, MealSlot.DINNER, applePie);
+                seedMeal(-3, MealSlot.BREAKFAST, shakshuka);
+                seedMeal(-3, MealSlot.LUNCH, pasta);
+                seedMeal(-3, MealSlot.DINNER, pasta);
+                seedMeal(-1, MealSlot.LUNCH, pasta);
+                seedMeal(0, MealSlot.BREAKFAST, shakshuka);
+                seedMeal(0, MealSlot.DINNER, pasta);
+                seedMeal(1, MealSlot.DINNER, applePie);
+                seedMeal(3, MealSlot.BREAKFAST, shakshuka);
+                seedMeal(3, MealSlot.LUNCH, pasta);
+                seedMeal(3, MealSlot.DINNER, pasta);
 
                 // Seed a sample recipe when the application context starts
                 seedRecipe(new Recipe("spaghetti bolognese", "Classic Italian pasta dish",

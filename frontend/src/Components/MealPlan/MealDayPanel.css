@@ -1,0 +1,114 @@
+.meal-day-panel {
+  flex: 1 1 320px;
+  min-width: 280px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+  padding: 1.375rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.meal-day-panel-intro,
+.meal-day-panel-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.meal-day-panel-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.meal-day-panel-text,
+.meal-day-panel-subtitle {
+  margin: 0;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.meal-day-panel-text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.meal-day-panel-subtitle {
+  font-size: 13px;
+}
+
+.meal-day-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.meal-day-panel-caption {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.meal-day-panel-today-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 14px;
+}
+
+.meal-day-panel-today-label {
+  color: var(--muted-foreground);
+}
+
+.meal-day-panel-today-value {
+  font-weight: 500;
+  text-align: right;
+}
+
+.meal-day-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.meal-day-panel-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.meal-day-panel-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.meal-day-panel-slot-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 1.5rem;
+}
+
+.meal-day-panel-slot-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.meal-day-panel-slot-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.meal-day-panel-actions {
+  display: flex;
+  justify-content: flex-end;
+}

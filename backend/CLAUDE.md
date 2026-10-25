@@ -3,10 +3,10 @@
 Spring Boot 4 REST API (Java, Maven), with JPA, Spring Security, Spring Mail, Lombok, jjwt and Google GenAI.
 
 ## Package layout (`src/main/java/com/homie/`)
-- `controller/`: REST endpoints (`AuthController` `/auth`, `RecipeController` `/recipes`, `RecipeManagementController` `/management/recipes`, `HealthController` `/health`). Request/response DTOs live in `controller/dto/`.
-- `model/`: JPA entities (`AppUser`, `EmailVerificationToken`, `Recipe`, `Step`)
+- `controller/`: REST endpoints (`AuthController` `/auth`, `RecipeController` `/recipes`, `RecipeManagementController` `/management/recipes`, `MealPlanController` `/meal-plan`, `HealthController` `/health`). Request/response DTOs live in `controller/dto/`.
+- `model/`: JPA entities (`AppUser`, `EmailVerificationToken`, `Recipe`, `Step`, `MealPlanEntry` + enum `MealSlot`)
 - `repository/`: Spring Data repositories
-- `services/`: business logic and external integrations (`RecipeService`, `EmailVerificationService`, `MailService`, Gemini)
+- `services/`: business logic and external integrations (`RecipeService`, `MealPlanService`, `EmailVerificationService`, `MailService`, Gemini)
 - `security/`: `ApplicationSecurityConfig` (filter chain, CORS), `DbUserDetailsService` (loads users from the DB), `ApplicationUserRole` / `ApplicationUserPermission` (roles and permissions)
 - `jwt/`: `JwtService` (create/verify tokens, build cookies), `JwtCookieAuthFilter` (authenticates each request from the cookie)
 - `nutrition/`: self-contained module for the macros per portion (entities, repositories and services in one package), see "Nutrition" below
@@ -32,7 +32,7 @@ Conventions:
 - CORS is configured in the `CorsConfigurationSource` bean for `http://localhost:5173`, with credentials allowed. Don't add `@CrossOrigin` to controllers.
 - Unauthenticated → 401 and missing permission → 403, never a redirect. `/error` must stay `permitAll`, or 403/404 would turn into 401.
 - CSRF is disabled for now. Enable `CookieCsrfTokenRepository` before a public deployment.
-- Dev users (seeded in `dev`, already verified): `anna`/`password` (USER), `admin`/`password123` (ADMIN), `user`/`password` (USER, owns 3 private recipes with steps).
+- Dev users (seeded in `dev`, already verified): `anna`/`password` (USER), `admin`/`password123` (ADMIN), `user`/`password` (USER, owns 3 private recipes with steps and a few meal plan entries around today).
 
 ## Mail
 - Sent via `JavaMailSender` (`spring.mail.*`). Outside `dev`, set `MAIL_HOST`, `MAIL_PORT` (587), `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` and `FRONTEND_URL`.
@@ -53,6 +53,13 @@ Conventions:
 - `owner` is also the creator ("by …" in the UI). `POST /recipes` (`RecipeDtos.CreateRecipeRequest`, needs `recipe:write`) always sets it to the logged-in user, never from the request. `RecipeService.create` drops blank ingredients/steps and numbers the steps in order. Missing name / negative time / portions < 1 / no ingredient / amount ≤ 0 / unit without amount / amount or unit without a name / unknown unit → 400. A valid cookie whose user is no longer in the DB (e.g. after a restart recreated it) → 401. Success → 201 with the recipe.
 - `PUT /recipes/{id}` (same body, needs `recipe:write`) overwrites all fields and replaces the steps (`RecipeService.update`). Only the owner may edit: unknown id → 404, someone else's recipe → 403, same 400 validation as create, success → 200 with the recipe.
 - H2 console (dev only): `http://localhost:8080/h2-console`
+
+## Meal plan
+- Table `meal_plan_entry` (`MealPlanEntry`): `user_id`, `plan_date` (`date` is reserved in H2), `slot` (`MealSlot`: `BREAKFAST`, `LUNCH`, `DINNER`), `recipe_id`. At most one entry per user, date and slot (unique constraint). Past days are what was eaten, future ones what is planned; there is no difference in the data.
+- Each user only ever sees and changes their own plan (always the logged-in user, never from the request).
+- `GET /meal-plan?from=yyyy-mm-dd&to=yyyy-mm-dd` (needs `recipe:read`): entries of that range, both ends inclusive, ordered by date and slot, as `MealPlanDtos.MealPlanEntryResponse` `{ date, slot, recipeId, recipeName }`. `from` after `to`, or more than 400 days (`MealPlanController.MAX_DAYS`) → 400.
+- `PUT /meal-plan` `{ dates, slot, recipeId }` (`SetMealRequest`, needs `recipe:write`): sets the slot to the recipe on every date (several days at once), `recipeId: null` clears it. Returns all entries of those dates afterwards. No dates / more than 400 / no slot → 400. The recipe must be visible to the user (own or shared): unknown → 404, someone else's private recipe → 403.
+- Tests: `MealPlanTests`.
 
 ## Nutrition (`com.homie.nutrition`)
 - A recipe has `nutrition` (`Nutrition` embeddable, **per portion**): `{ fat, carbs, protein, calories, suggested }` in grams/kcal, or `null` if nothing could be calculated. Each macro may be null on its own.

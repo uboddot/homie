@@ -1,0 +1,42 @@
+.recipe-picker-trigger {
+  width: 100%;
+  justify-content: space-between;
+  font-weight: 400;
+}
+
+.recipe-picker-value,
+.recipe-picker-placeholder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recipe-picker-placeholder {
+  color: var(--muted-foreground);
+}
+
+.recipe-picker-chevron {
+  opacity: 0.5;
+}
+
+/* as wide as the trigger */
+.recipe-picker-content {
+  width: var(--radix-popover-trigger-width);
+  padding: 0;
+}
+
+.recipe-picker-check.is-hidden {
+  visibility: hidden;
+}
+
+.recipe-picker-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recipe-picker-owner {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
