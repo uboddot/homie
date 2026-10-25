@@ -28,6 +28,11 @@ import com.homie.model.Ingredient;
 import com.homie.model.IngredientUnit;
 import com.homie.model.Recipe;
 import com.homie.model.Step;
+import com.homie.nutrition.IngredientNutrition;
+import com.homie.nutrition.IngredientNutritionRepository;
+import com.homie.nutrition.IngredientUnitWeight;
+import com.homie.nutrition.IngredientUnitWeightRepository;
+import com.homie.nutrition.NutritionService;
 import com.homie.repository.RecipeRepository;
 import com.homie.repository.StepRepository;
 import com.homie.repository.UserRepository;
@@ -42,6 +47,9 @@ public class Seeder {
         private final StepRepository stepRepository;
         private final UserRepository userRepository;
         private final PasswordEncoder passwordEncoder;
+        private final IngredientNutritionRepository ingredientNutritionRepository;
+        private final IngredientUnitWeightRepository unitWeightRepository;
+        private final NutritionService nutritionService;
 
         private AppUser anna;
         private AppUser admin;
@@ -49,11 +57,16 @@ public class Seeder {
         private int seededRecipes = 0;
 
         public Seeder(RecipeRepository recipeRepository, StepRepository stepRepository,
-                        UserRepository userRepository, PasswordEncoder passwordEncoder) {
+                        UserRepository userRepository, PasswordEncoder passwordEncoder,
+                        IngredientNutritionRepository ingredientNutritionRepository,
+                        IngredientUnitWeightRepository unitWeightRepository, NutritionService nutritionService) {
                 this.recipeRepository = recipeRepository;
                 this.stepRepository = stepRepository;
                 this.userRepository = userRepository;
                 this.passwordEncoder = passwordEncoder;
+                this.ingredientNutritionRepository = ingredientNutritionRepository;
+                this.unitWeightRepository = unitWeightRepository;
+                this.nutritionService = nutritionService;
         }
 
         /** Dev users are verified right away, so they can log in without a mail. */
@@ -71,10 +84,14 @@ public class Seeder {
                 seededRecipes++;
         }
 
-        /** Private recipe of the given owner, steps are numbered in the given order. */
+        /**
+         * Private recipe of the given owner, steps are numbered in the given order. Its ingredients are all in the
+         * seeded nutrition cache, so the suggestion is calculated without asking Gemini.
+         */
         private void seedOwnRecipe(Recipe recipe, AppUser owner, String... steps) {
                 recipe.setOwner(owner);
                 recipe.setShared(false);
+                recipe.setNutrition(nutritionService.suggest(recipe.getIngredients(), recipe.getPortions()));
                 recipeRepository.save(recipe);
                 for (int i = 0; i < steps.length; i++) {
                         stepRepository.save(new Step(recipe, i + 1, steps[i]));
@@ -83,6 +100,17 @@ public class Seeder {
 
         private static Ingredient ingredient(String amount, IngredientUnit unit, String name) {
                 return new Ingredient(new BigDecimal(amount), unit, name);
+        }
+
+        /** Cache row with the macros per 100 g, stored per gram like the ones from Gemini. */
+        private void seedIngredientNutrition(String name, String fat, String carbs, String protein) {
+                BigDecimal hundred = BigDecimal.valueOf(100);
+                ingredientNutritionRepository.save(new IngredientNutrition(name, new BigDecimal(fat).divide(hundred),
+                                new BigDecimal(carbs).divide(hundred), new BigDecimal(protein).divide(hundred)));
+        }
+
+        private void seedUnitWeight(String name, IngredientUnit unit, String grams) {
+                unitWeightRepository.save(new IngredientUnitWeight(name, unit, new BigDecimal(grams)));
         }
 
         /** Ingredient without amount and unit, e.g. "salt". */
@@ -96,6 +124,36 @@ public class Seeder {
                 anna = seedUser("anna", "password", ApplicationUserRole.USER);
                 admin = seedUser("admin", "password123", ApplicationUserRole.ADMIN);
                 user = seedUser("user", "password", ApplicationUserRole.USER);
+
+                // Nutrition cache for the ingredients of user's recipes (fat, carbs, protein per 100 g)
+                seedIngredientNutrition("apples", "0.2", "14", "0.3");
+                seedIngredientNutrition("flour", "1", "76", "10");
+                seedIngredientNutrition("sugar", "0", "100", "0");
+                seedIngredientNutrition("butter", "81", "0.1", "0.9");
+                seedIngredientNutrition("cinnamon", "1.2", "81", "4");
+                seedIngredientNutrition("spaghetti", "1.5", "75", "13");
+                seedIngredientNutrition("garlic", "0.5", "33", "6.4");
+                seedIngredientNutrition("olive oil", "100", "0", "0");
+                seedIngredientNutrition("chili flakes", "17", "50", "12");
+                seedIngredientNutrition("parsley", "0.8", "6.3", "3");
+                seedIngredientNutrition("eggs", "10", "1.1", "13");
+                seedIngredientNutrition("tomatoes", "0.3", "4", "1");
+                seedIngredientNutrition("bell pepper", "0.3", "6", "1");
+                seedIngredientNutrition("onion", "0.1", "9", "1.1");
+                seedIngredientNutrition("cumin", "22", "44", "18");
+                seedIngredientNutrition("paprika", "13", "54", "14");
+                seedUnitWeight("apples", PIECE, "180");
+                seedUnitWeight("cinnamon", TSP, "2.6");
+                seedUnitWeight("garlic", CLOVE, "4");
+                seedUnitWeight("olive oil", TBSP, "13.5");
+                seedUnitWeight("chili flakes", PINCH, "0.3");
+                seedUnitWeight("parsley", BUNCH, "50");
+                seedUnitWeight("eggs", PIECE, "55");
+                seedUnitWeight("tomatoes", CAN, "400");
+                seedUnitWeight("bell pepper", PIECE, "150");
+                seedUnitWeight("onion", PIECE, "110");
+                seedUnitWeight("cumin", TSP, "2");
+                seedUnitWeight("paprika", TSP, "2.3");
 
                 // user's own private recipes, with steps
                 seedOwnRecipe(new Recipe("apple pie", "Delicious homemade apple pie",

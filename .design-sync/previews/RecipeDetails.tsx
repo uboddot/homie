@@ -22,6 +22,7 @@ const carbonara = {
     { id: 3, stepOrder: 3, instruction: 'Whisk the yolks with the pecorino and pepper.' },
     { id: 4, stepOrder: 4, instruction: 'Toss the pasta with the guanciale off the heat, then stir in the egg mixture with a splash of pasta water.' },
   ],
+  nutrition: { fat: 31.5, carbs: 75.2, protein: 33.8, calories: 720, suggested: true },
 };
 
 export const Default = () => (
@@ -48,6 +49,7 @@ export const SinglePortionNoSteps = () => (
           { amount: 0.5, unit: 'PIECE', name: 'banana' },
         ],
         steps: [],
+        nutrition: null,
       }}
     />
   </div>

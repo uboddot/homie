@@ -9,6 +9,7 @@ Spring Boot 4 REST API (Java, Maven), with JPA, Spring Security, Spring Mail, Lo
 - `services/`: business logic and external integrations (`RecipeService`, `EmailVerificationService`, `MailService`, Gemini)
 - `security/`: `ApplicationSecurityConfig` (filter chain, CORS), `DbUserDetailsService` (loads users from the DB), `ApplicationUserRole` / `ApplicationUserPermission` (roles and permissions)
 - `jwt/`: `JwtService` (create/verify tokens, build cookies), `JwtCookieAuthFilter` (authenticates each request from the cookie)
+- `nutrition/`: self-contained module for the macros per portion (entities, repositories and services in one package), see "Nutrition" below
 - `db/Seeder.java`: seed data on startup (only with the `dev` profile)
 
 Conventions:
@@ -49,9 +50,37 @@ Conventions:
 - An ingredient is `{ amount, unit, name }`: `amount` a decimal (`BigDecimal`), `unit` an `IngredientUnit` enum constant (`G`, `KG`, `DL`, `TSP`, `PINCH`, `PIECE`, …). Both are optional ("salt"), `name` is required.
 - `portions` (int ≥ 1) says how many portions the ingredient amounts are for; the frontend scales from it. Missing in a request → 4 (`RecipeService.DEFAULT_PORTIONS`).
 - A user sees their own recipes plus all `shared` ones (`RecipeRepository.findVisibleFor`).
-- `owner` is also the creator ("by …" in the UI). `POST /recipes` (`RecipeDtos.CreateRecipeRequest`, needs `recipe:write`) always sets it to the logged-in user, never from the request. `RecipeService.create` drops blank ingredients/steps and numbers the steps in order. Missing name / negative time / portions < 1 / no ingredient / amount ≤ 0 / unit without amount / amount or unit without a name / unknown unit → 400, success → 201 with the recipe.
+- `owner` is also the creator ("by …" in the UI). `POST /recipes` (`RecipeDtos.CreateRecipeRequest`, needs `recipe:write`) always sets it to the logged-in user, never from the request. `RecipeService.create` drops blank ingredients/steps and numbers the steps in order. Missing name / negative time / portions < 1 / no ingredient / amount ≤ 0 / unit without amount / amount or unit without a name / unknown unit → 400. A valid cookie whose user is no longer in the DB (e.g. after a restart recreated it) → 401. Success → 201 with the recipe.
 - `PUT /recipes/{id}` (same body, needs `recipe:write`) overwrites all fields and replaces the steps (`RecipeService.update`). Only the owner may edit: unknown id → 404, someone else's recipe → 403, same 400 validation as create, success → 200 with the recipe.
 - H2 console (dev only): `http://localhost:8080/h2-console`
+
+## Nutrition (`com.homie.nutrition`)
+- A recipe has `nutrition` (`Nutrition` embeddable, **per portion**): `{ fat, carbs, protein, calories, suggested }` in grams/kcal, or `null` if nothing could be calculated. Each macro may be null on its own.
+- `calories` is always derived by `NutritionCalculator.calories` (9 kcal/g fat, 4 kcal/g carbs and protein, macros rounded to 0.1 g first). It is null unless all three macros are known, and is never accepted from a request.
+- `NutritionService` is the entry point `RecipeService` uses:
+  - `suggest(ingredients, portions)` → calculated values with `suggested = true`;
+  - `fromUser(fat, carbs, protein)` → the user's values with `suggested = false`.
+- Request: optional `nutrition: { fat, carbs, protein }` on `CreateRecipeRequest`. If present, all three are required (400 "Enter fat, carbs and protein") and none may be negative (400 "Macros can't be negative").
+  - **create:** with `nutrition`, the user's values are stored; without it, values are suggested.
+  - **update:** with `nutrition`, the user's values are stored. Without it, an unchanged suggestion is kept (same ingredients, amounts compared by value, and same portions). Otherwise values are suggested again. So the frontend sends the user's values back to keep them, and sends `null` to go back to a suggestion.
+- How a suggestion is calculated (`NutritionCalculator.perPortion`):
+  - Only ingredients with an amount count; "salt" without an amount is ignored.
+  - Grams are the amount for `G`, × 1000 for `KG`, and otherwise × the cached weight of one unit. An amount without a unit counts as `PIECE`.
+  - Grams × the macros per gram, summed and divided by the portions.
+  - A macro is null if it is unknown for any counted ingredient.
+- Cache (global, not per user) used by `IngredientNutritionCache.lookup`:
+  - table `ingredient_nutrition`: macros **per gram** per ingredient name;
+  - table `ingredient_unit_weight`: grams of one unit per (name, unit), e.g. potato `PIECE` = 170 g.
+  - Names are normalized: trimmed, whitespace collapsed, lowercased.
+  - Only missing entries are fetched, with **one** `NutritionSource.fetch` call per recipe, and the answers are stored. Nothing is stored for what the source didn't answer, so it is asked again next time.
+  - Because of `create-drop`, the cache is emptied on every restart.
+- `GeminiNutritionSource` (the `NutritionSource`):
+  - Uses `gemini-3-flash-preview` with a JSON `responseSchema`. It asks for macros per 100 g and stores them divided by 100.
+  - It drops answers to things it didn't ask for, and implausible values (negative, > 100 g per 100 g, weight ≤ 0).
+  - Without `GOOGLE_API_KEY`, or on any error (logged as a warning), it answers nothing. The recipe is still saved, with the unknown macros null.
+  - The call is synchronous, so creating a recipe with new ingredients takes a few seconds.
+- The `Seeder` fills the cache for the ingredients of `user`'s three recipes and suggests their nutrition without Gemini. The other seeded recipes have no nutrition until they are edited.
+- Tests mock `NutritionSource` with `@MockitoBean`, so they never call Gemini (see `NutritionTests`).
 
 ## Commands
 - `./mvnw compile`

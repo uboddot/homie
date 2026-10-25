@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.homie.controller.dto.AuthDtos.ErrorResponse;
 import com.homie.controller.dto.RecipeDtos.CreateRecipeRequest;
+import com.homie.controller.dto.RecipeDtos.NutritionRequest;
 import com.homie.repository.RecipeRepository;
 import com.homie.services.RecipeService;
 import com.homie.model.Ingredient;
@@ -91,6 +92,15 @@ public class RecipeController {
             }
             if (ingredient.getName().isEmpty()) {
                 return ResponseEntity.badRequest().body(new ErrorResponse("Every amount needs an ingredient"));
+            }
+        }
+        NutritionRequest nutrition = request.nutrition();
+        if (nutrition != null) {
+            if (nutrition.fat() == null || nutrition.carbs() == null || nutrition.protein() == null) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("Enter fat, carbs and protein"));
+            }
+            if (nutrition.fat().signum() < 0 || nutrition.carbs().signum() < 0 || nutrition.protein().signum() < 0) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("Macros can't be negative"));
             }
         }
         return null;

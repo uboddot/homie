@@ -13,7 +13,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.homie.nutrition.NutritionSource;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -36,6 +39,9 @@ class RecipeUpdateTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean // never ask Gemini in tests
+    private NutritionSource nutritionSource;
 
     private Cookie login(String username, String password) throws Exception {
         return mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)

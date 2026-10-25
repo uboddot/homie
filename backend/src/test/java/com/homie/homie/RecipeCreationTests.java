@@ -12,7 +12,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.homie.jwt.JwtService;
+import com.homie.nutrition.NutritionSource;
+import com.homie.security.ApplicationUserRole;
 
 @SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:recipetestdb")
 @AutoConfigureMockMvc
@@ -27,6 +32,12 @@ class RecipeCreationTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @MockitoBean // never ask Gemini in tests
+    private NutritionSource nutritionSource;
 
     private Cookie loginAsAnna() throws Exception {
         return mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
@@ -108,6 +119,14 @@ class RecipeCreationTests {
     @Test
     void notLoggedInIsRejected() throws Exception {
         mockMvc.perform(post("/recipes").contentType(MediaType.APPLICATION_JSON).content(RECIPE))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void validTokenOfAUserThatNoLongerExistsIsRejected() throws Exception {
+        Cookie ghost = new Cookie("access_token",
+                jwtService.createToken("ghost", ApplicationUserRole.USER.getGrantedAuthorities()));
+        mockMvc.perform(post("/recipes").cookie(ghost).contentType(MediaType.APPLICATION_JSON).content(RECIPE))
                 .andExpect(status().isUnauthorized());
     }
 }

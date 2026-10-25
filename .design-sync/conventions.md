@@ -29,11 +29,13 @@ type Recipe = {
   ownerUsername: string | null; shared: boolean;
   ingredients: { amount: number | null; unit: Unit | null; name: string }[];
   steps: { id: number; stepOrder: number; instruction: string }[];
+  // per portion, null if unknown; suggested = calculated by the backend, not yet edited by a user
+  nutrition: { fat: number | null; carbs: number | null; protein: number | null; calories: number | null; suggested: boolean } | null;
 };
 type Unit = 'G'|'KG'|'ML'|'CL'|'DL'|'L'|'TSP'|'TBSP'|'CUP'|'PINCH'|'PIECE'|'CLOVE'|'SLICE'|'CAN'|'BUNCH';
 ```
 - One recipe: `<Recipe recipe={r} view="card" | "list" onSelect={...} />`. Many: `<RecipeCollection recipes={rs} view="card" | "list" onSelect={...} />`. It renders the grid or the bordered list (`recipe-collection--list`). A list-view item is an `<li>`, so never render it outside a list.
-- Detail view: `RecipeDetails` (meta line, scalable ingredient table with `PortionStepper`, numbered steps), typically inside `DialogContent`.
+- Detail view: `RecipeDetails` (meta line, scalable ingredient table with `PortionStepper`, nutrition per portion with a "Suggestion" badge, numbered steps), typically inside `DialogContent`.
 - Forms: `IngredientList` takes rows `{ amount: string; unit: Unit | null; name: string }[]` plus `onChange`; `EditableList` takes `items: string[]`, `label`, `onChange`, and `ordered` for numbered steps. Both are controlled.
 
 ## Where the truth lives

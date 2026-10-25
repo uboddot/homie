@@ -16,6 +16,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - MAVEN_ARGS=--no-transfer-progress # without a TTY the download progress floods the log
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - MAIL_HOST=mailpit
     healthcheck:

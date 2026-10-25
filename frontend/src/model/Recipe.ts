@@ -8,6 +8,7 @@ export type Recipe = {
     ownerUsername: string | null;
     shared: boolean;
     steps: Step[];
+    nutrition: Nutrition | null; // per portion, null if the backend couldn't calculate it
 }
 
 /** How a recipe is displayed, see Components/Recipe/Recipe.tsx */
@@ -43,6 +44,22 @@ export type Ingredient = {
     name: string;
 }
 
+/** Macros of one portion in grams; a value is null if unknown. Calories are derived by the backend. */
+export type Nutrition = {
+    fat: number | null;
+    carbs: number | null;
+    protein: number | null;
+    calories: number | null; // kcal, only set if fat, carbs and protein are all known
+    suggested: boolean; // calculated by the backend, not yet edited by a user
+}
+
+/** Macros per portion entered by a user (backend: RecipeDtos.NutritionRequest) */
+export type NutritionInput = {
+    fat: number;
+    carbs: number;
+    protein: number;
+}
+
 export type Step = {
     id: number;
     stepOrder: number;
@@ -58,4 +75,5 @@ export type RecipeInput = {
     ingredients: Ingredient[];
     steps: string[]; // instructions in order
     shared: boolean;
+    nutrition: NutritionInput | null; // null → the backend suggests it
 }

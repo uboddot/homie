@@ -10,6 +10,8 @@ import type { Recipe, RecipeInput } from '../../model/Recipe';
 import EditableList from './EditableList';
 import IngredientList from './IngredientList';
 import { emptyIngredientRow, ingredientError, toIngredientRows, toIngredients, type IngredientRow } from './ingredients';
+import NutritionFields from './NutritionFields';
+import { emptyNutritionRow, nutritionError, toNutritionInput, toNutritionRow, type NutritionRow } from './nutrition';
 import './RecipeFormDialog.css';
 
 type RecipeFormDialogProps = {
@@ -34,6 +36,9 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
   const [ingredients, setIngredients] = useState<IngredientRow[]>([emptyIngredientRow]);
   const [steps, setSteps] = useState<string[]>(['']);
   const [shared, setShared] = useState(false);
+  const [nutrition, setNutrition] = useState<NutritionRow>(emptyNutritionRow);
+  // a suggestion stays one (and is recalculated by the backend) until the user changes a value
+  const [nutritionTouched, setNutritionTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -49,6 +54,8 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
     setIngredients(withRow(toIngredientRows(recipe?.ingredients ?? []), emptyIngredientRow));
     setSteps(withRow(recipe?.steps.map(s => s.instruction) ?? [], ''));
     setShared(recipe?.shared ?? false);
+    setNutrition(toNutritionRow(recipe?.nutrition ?? null));
+    setNutritionTouched(false);
     setError(null);
   }, [open, recipe]);
 
@@ -64,8 +71,10 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
       ingredients: toIngredients(ingredients),
       steps: steps.map(s => s.trim()).filter(Boolean),
       shared,
+      // only the user's own values are sent; without them the backend suggests (or keeps) a calculated value
+      nutrition: nutritionTouched || recipe?.nutrition?.suggested === false ? toNutritionInput(nutrition) : null,
     };
-    const invalid = ingredientError(body.ingredients);
+    const invalid = ingredientError(body.ingredients) ?? (nutritionTouched ? nutritionError(nutrition) : null);
     if (invalid) {
       setError(invalid);
       return;
@@ -126,6 +135,9 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
           </div>
 
           <IngredientList rows={ingredients} onChange={setIngredients} />
+
+          <NutritionFields value={nutrition} suggested={recipe?.nutrition?.suggested === true && !nutritionTouched}
+            onChange={value => { setNutrition(value); setNutritionTouched(true); }} />
 
           <EditableList id="recipe-step" label="Steps" items={steps} onChange={setSteps}
             placeholder="What to do next" addLabel="Add step" ordered />

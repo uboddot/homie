@@ -4,6 +4,7 @@ import java.util.List;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +24,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import com.homie.nutrition.Nutrition;
 
 @Entity
 @Table(name = "recipe")
@@ -61,6 +64,9 @@ public class Recipe {
     private AppUser owner;
 
     private boolean shared; // visible to all users, not only the owner
+
+    @Embedded
+    private Nutrition nutrition; // per portion, null if it couldn't be calculated
 
     public Recipe(String name, String description, List<Ingredient> ingredients, int preparationTime, int portions) {
         this.name = name;

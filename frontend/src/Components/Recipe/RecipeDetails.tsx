@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import { UNIT_LABELS, type Recipe } from '../../model/Recipe';
 import { formatAmount } from './ingredients';
+import NutritionSummary from './NutritionSummary';
 import PortionStepper from './PortionStepper';
 import { scaleIngredient } from './units';
 import './RecipeDetails.css';
@@ -44,6 +45,8 @@ export default function RecipeDetails({ recipe }: { recipe: Recipe }) {
           </tbody>
         </table>
       </section>
+
+      <NutritionSummary nutrition={recipe.nutrition} />
 
       <section>
         <h3 className="recipe-details-heading">Steps</h3>
