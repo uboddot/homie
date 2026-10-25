@@ -48,6 +48,7 @@ Conventions:
 - Tables: `app_user` (`user` is reserved in H2, has `email_verified`), `email_verification_token`, `recipe` (`owner_id` → `app_user`, `shared`), `step`.
 - A user sees their own recipes plus all `shared` ones (`RecipeRepository.findVisibleFor`).
 - `owner` is also the creator ("by …" in the UI). `POST /recipes` (`RecipeDtos.CreateRecipeRequest`, needs `recipe:write`) always sets it to the logged-in user, never from the request. `RecipeService.create` drops blank ingredients/steps and numbers the steps in order. Missing name / negative time / no ingredient → 400, success → 201 with the recipe.
+- `PUT /recipes/{id}` (same body, needs `recipe:write`) overwrites all fields and replaces the steps (`RecipeService.update`). Only the owner may edit: unknown id → 404, someone else's recipe → 403, same 400 validation as create, success → 200 with the recipe.
 - H2 console (dev only): `http://localhost:8080/h2-console`
 
 ## Commands

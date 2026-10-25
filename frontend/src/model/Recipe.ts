@@ -18,8 +18,8 @@ export type Step = {
     instruction: string;
 }
 
-/** Body of POST /recipes (backend: RecipeDtos.CreateRecipeRequest); the owner is set by the backend */
-export type NewRecipe = {
+/** Body of POST /recipes and PUT /recipes/{id} (backend: RecipeDtos.CreateRecipeRequest); the owner is set by the backend */
+export type RecipeInput = {
     name: string;
     description: string;
     preparationTime: number | null; // in minutes

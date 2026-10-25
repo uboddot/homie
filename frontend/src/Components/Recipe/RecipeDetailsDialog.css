@@ -6,3 +6,8 @@
 .recipe-details-dialog-title {
   text-transform: capitalize;
 }
+
+.recipe-details-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+}

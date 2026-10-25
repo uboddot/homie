@@ -51,6 +51,7 @@ public class ApplicationSecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/recipes").hasAuthority(RECIPE_WRITE.getPermission())
+                        .requestMatchers(HttpMethod.PUT, "/recipes/**").hasAuthority(RECIPE_WRITE.getPermission())
                         .requestMatchers("/recipes/**").hasAuthority(RECIPE_READ.getPermission())
                         .requestMatchers("/management/**").hasAuthority(RECIPE_ADMIN.getPermission())
                         .anyRequest().authenticated())

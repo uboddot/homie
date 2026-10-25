@@ -1,7 +1,9 @@
 package com.homie.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,6 +46,28 @@ public class RecipeController {
 
     @PostMapping
     public ResponseEntity<?> createRecipe(@RequestBody CreateRecipeRequest request, Authentication authentication) {
+        ResponseEntity<?> invalid = validate(request);
+        if (invalid != null) {
+            return invalid;
+        }
+
+        Recipe recipe = recipeService.create(request, authentication.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(recipe);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateRecipe(@PathVariable Long id, @RequestBody CreateRecipeRequest request,
+            Authentication authentication) {
+        ResponseEntity<?> invalid = validate(request);
+        if (invalid != null) {
+            return invalid;
+        }
+
+        return ResponseEntity.ok(recipeService.update(id, request, authentication.getName()));
+    }
+
+    /** 400 with a message if the request can't be saved, otherwise null. */
+    private static ResponseEntity<?> validate(CreateRecipeRequest request) {
         if (request.name() == null || request.name().isBlank()) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Name is required"));
         }
@@ -53,8 +77,6 @@ public class RecipeController {
         if (RecipeService.nonBlank(request.ingredients()).isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Add at least one ingredient"));
         }
-
-        Recipe recipe = recipeService.create(request, authentication.getName());
-        return ResponseEntity.status(HttpStatus.CREATED).body(recipe);
+        return null;
     }
 }

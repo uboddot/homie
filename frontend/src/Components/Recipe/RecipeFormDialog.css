@@ -1,31 +1,31 @@
-.create-recipe-dialog {
+.recipe-form-dialog {
   max-height: 85vh;
   overflow-y: auto;
 }
 
-.create-recipe-form {
+.recipe-form-form {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 }
 
-.create-recipe-field {
+.recipe-form-field {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.create-recipe-time {
+.recipe-form-time {
   max-width: 12rem;
 }
 
-.create-recipe-shared {
+.recipe-form-shared {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.create-recipe-error {
+.recipe-form-error {
   color: var(--destructive);
   font-size: 0.875rem;
 }
