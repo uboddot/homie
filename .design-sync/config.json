@@ -1,0 +1,39 @@
+{
+  "projectId": "48b8b95b-be17-401d-902b-3c659b3b684e",
+  "shape": "package",
+  "pkg": "homie-ui",
+  "globalName": "Homie",
+  "buildCmd": "cd frontend && npm run build && node ../.design-sync/make-pkg.mjs",
+  "srcDir": "../../src",
+  "tsconfig": "../../tsconfig.app.json",
+  "cssEntry": "styles.css",
+  "docsMap": {
+    "Recipe": "../../../.design-sync/docs/Recipe.md"
+  },
+  "overrides": {
+    "Dialog": {
+      "cardMode": "single",
+      "viewport": "800x420"
+    },
+    "Sheet": {
+      "cardMode": "single",
+      "viewport": "800x520"
+    },
+    "RecipeCollection": {
+      "cardMode": "column"
+    },
+    "Card": {
+      "cardMode": "column"
+    },
+    "Textarea": {
+      "cardMode": "column"
+    },
+    "Recipe": {
+      "cardMode": "column"
+    },
+    "RecipeListItem": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}
