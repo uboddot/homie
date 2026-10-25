@@ -14,6 +14,25 @@
   font-weight: 600;
 }
 
+.recipe-details-ingredients-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.recipe-details-ingredients-header .recipe-details-heading {
+  margin-bottom: 0;
+}
+
+.recipe-details-portions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 /* table, so amounts, units and ingredients each line up in their own column */
 .recipe-details-ingredients {
   border-collapse: collapse;

@@ -101,7 +101,7 @@ public class Seeder {
                 seedOwnRecipe(new Recipe("apple pie", "Delicious homemade apple pie",
                                 List.of(ingredient("4", PIECE, "apples"), ingredient("250", G, "flour"),
                                                 ingredient("100", G, "sugar"), ingredient("125", G, "butter"),
-                                                ingredient("1", TSP, "cinnamon")), 60), user,
+                                                ingredient("1", TSP, "cinnamon")), 60, 8), user,
                                 "Preheat oven to 375°F (190°C).",
                                 "Rub butter into flour and a pinch of sugar, add cold water and form a dough.",
                                 "Peel and slice the apples, toss with sugar and cinnamon.",
@@ -110,7 +110,7 @@ public class Seeder {
                 seedOwnRecipe(new Recipe("pasta aglio e olio", "Simple spaghetti with garlic and olive oil",
                                 List.of(ingredient("200", G, "spaghetti"), ingredient("3", CLOVE, "garlic"),
                                                 ingredient("4", TBSP, "olive oil"), ingredient("1", PINCH, "chili flakes"),
-                                                ingredient("1", BUNCH, "parsley")), 20), user,
+                                                ingredient("1", BUNCH, "parsley")), 20, 2), user,
                                 "Cook the spaghetti in salted water until al dente.",
                                 "Gently fry sliced garlic and chili flakes in olive oil until lightly golden.",
                                 "Toss the drained spaghetti in the oil with a splash of pasta water.",
@@ -118,7 +118,7 @@ public class Seeder {
                 seedOwnRecipe(new Recipe("shakshuka", "Eggs poached in a spiced tomato sauce",
                                 List.of(ingredient("4", PIECE, "eggs"), ingredient("1", CAN, "tomatoes"),
                                                 ingredient("1", PIECE, "bell pepper"), ingredient("1", PIECE, "onion"),
-                                                ingredient("1", TSP, "cumin"), ingredient("1", TSP, "paprika")), 30), user,
+                                                ingredient("1", TSP, "cumin"), ingredient("1", TSP, "paprika")), 30, 2), user,
                                 "Sauté diced onion and bell pepper in a pan until soft.",
                                 "Add cumin and paprika, then the chopped tomatoes, and simmer for 10 minutes.",
                                 "Make small wells in the sauce and crack an egg into each.",
@@ -129,95 +129,95 @@ public class Seeder {
                 seedRecipe(new Recipe("spaghetti bolognese", "Classic Italian pasta dish",
                                 List.of(ingredient("400", G, "spaghetti"), ingredient("500", G, "ground beef"),
                                                 ingredient("500", ML, "tomato sauce"), ingredient("1", PIECE, "onion"),
-                                                ingredient("2", CLOVE, "garlic")), 45));
+                                                ingredient("2", CLOVE, "garlic")), 45, 4));
                 seedRecipe(new Recipe("chocolate chip cookies", "Crispy on the outside, chewy on the inside",
                                 List.of(ingredient("280", G, "flour"), ingredient("200", G, "sugar"),
                                                 ingredient("170", G, "butter"), ingredient("2", PIECE, "eggs"),
-                                                ingredient("200", G, "chocolate chips")), 30));
+                                                ingredient("200", G, "chocolate chips")), 30, 24));
                 seedRecipe(new Recipe("caesar salad", "Fresh and crunchy salad with creamy dressing",
                                 List.of(ingredient("1", PIECE, "romaine lettuce"), ingredient("100", G, "croutons"),
-                                                ingredient("50", G, "parmesan cheese"), ingredient("4", TBSP, "caesar dressing")), 15));
+                                                ingredient("50", G, "parmesan cheese"), ingredient("4", TBSP, "caesar dressing")), 15, 2));
                 seedRecipe(new Recipe("chicken curry", "Spicy and flavorful chicken curry",
                                 List.of(ingredient("600", G, "chicken"), ingredient("2", TBSP, "curry powder"),
                                                 ingredient("400", ML, "coconut milk"), ingredient("1", PIECE, "onion"),
-                                                ingredient("3", CLOVE, "garlic"), ingredient("1", TBSP, "ginger")), 50));
+                                                ingredient("3", CLOVE, "garlic"), ingredient("1", TBSP, "ginger")), 50, 4));
                 seedRecipe(new Recipe("vegetable stir fry", "Colorful veggies with savory sauce",
                                 List.of(ingredient("1", PIECE, "broccoli"), ingredient("1", PIECE, "bell pepper"),
                                                 ingredient("2", PIECE, "carrot"), ingredient("3", TBSP, "soy sauce"),
-                                                ingredient("2", CLOVE, "garlic"), ingredient("1", TSP, "ginger")), 20));
+                                                ingredient("2", CLOVE, "garlic"), ingredient("1", TSP, "ginger")), 20, 2));
                 seedRecipe(new Recipe("beef tacos", "Crispy tacos with seasoned beef",
                                 List.of(ingredient("8", PIECE, "taco shells"), ingredient("500", G, "ground beef"),
                                                 ingredient("0.5", PIECE, "lettuce"), ingredient("2", PIECE, "tomato"),
-                                                ingredient("100", G, "cheddar"), ingredient("2", TBSP, "taco seasoning")), 25));
+                                                ingredient("100", G, "cheddar"), ingredient("2", TBSP, "taco seasoning")), 25, 4));
                 seedRecipe(new Recipe("margherita pizza", "Classic pizza with basil and mozzarella",
                                 List.of(ingredient("400", G, "pizza dough"), ingredient("150", ML, "tomato sauce"),
                                                 ingredient("125", G, "mozzarella"), ingredient("1", BUNCH, "basil"),
-                                                ingredient("1", TBSP, "olive oil")), 30));
+                                                ingredient("1", TBSP, "olive oil")), 30, 2));
                 seedRecipe(new Recipe("pancakes", "Fluffy breakfast pancakes",
                                 List.of(ingredient("200", G, "flour"), ingredient("3", DL, "milk"),
                                                 ingredient("2", PIECE, "eggs"), ingredient("2", TSP, "baking powder"),
-                                                ingredient("1", TBSP, "sugar"), ingredient("30", G, "butter")), 15));
+                                                ingredient("1", TBSP, "sugar"), ingredient("30", G, "butter")), 15, 4));
                 seedRecipe(new Recipe("avocado toast", "Simple toast with smashed avocado",
                                 List.of(ingredient("2", SLICE, "bread"), ingredient("1", PIECE, "avocado"),
                                                 ingredient("0.5", PIECE, "lemon"), ingredient("salt"),
-                                                ingredient("pepper"), ingredient("1", PINCH, "chili flakes")), 10));
+                                                ingredient("pepper"), ingredient("1", PINCH, "chili flakes")), 10, 1));
                 seedRecipe(new Recipe("greek salad", "Fresh salad with feta and olives",
                                 List.of(ingredient("1", PIECE, "cucumber"), ingredient("3", PIECE, "tomato"),
                                                 ingredient("200", G, "feta"), ingredient("100", G, "olives"),
-                                                ingredient("0.5", PIECE, "red onion"), ingredient("1", TSP, "oregano")), 12));
+                                                ingredient("0.5", PIECE, "red onion"), ingredient("1", TSP, "oregano")), 12, 2));
                 seedRecipe(new Recipe("tomato basil soup", "Comforting soup with herbs",
                                 List.of(ingredient("1", KG, "tomatoes"), ingredient("1", PIECE, "onion"),
                                                 ingredient("2", CLOVE, "garlic"), ingredient("1", BUNCH, "basil"),
-                                                ingredient("5", DL, "vegetable broth")), 35));
+                                                ingredient("5", DL, "vegetable broth")), 35, 4));
                 seedRecipe(new Recipe("grilled cheese", "Golden toast with melted cheese",
                                 List.of(ingredient("2", SLICE, "bread"), ingredient("2", SLICE, "cheddar"),
-                                                ingredient("1", TBSP, "butter")), 10));
+                                                ingredient("1", TBSP, "butter")), 10, 1));
                 seedRecipe(new Recipe("lemon garlic salmon", "Bright and flaky baked salmon",
                                 List.of(ingredient("400", G, "salmon"), ingredient("1", PIECE, "lemon"),
                                                 ingredient("2", CLOVE, "garlic"), ingredient("2", TBSP, "olive oil"),
-                                                ingredient("1", BUNCH, "dill")), 25));
+                                                ingredient("1", BUNCH, "dill")), 25, 2));
                 seedRecipe(new Recipe("banana smoothie", "Creamy smoothie with banana",
                                 List.of(ingredient("2", PIECE, "banana"), ingredient("2", DL, "milk"),
                                                 ingredient("150", G, "yogurt"), ingredient("1", TBSP, "honey"),
-                                                ingredient("ice")), 5));
+                                                ingredient("ice")), 5, 2));
                 seedRecipe(new Recipe("quinoa bowl", "Healthy bowl with roasted veggies",
                                 List.of(ingredient("150", G, "quinoa"), ingredient("1", PIECE, "zucchini"),
                                                 ingredient("1", CAN, "chickpeas"), ingredient("2", TBSP, "olive oil"),
-                                                ingredient("0.5", PIECE, "lemon"), ingredient("100", G, "spinach")), 30));
+                                                ingredient("0.5", PIECE, "lemon"), ingredient("100", G, "spinach")), 30, 2));
                 seedRecipe(new Recipe("shrimp scampi", "Garlic butter shrimp over pasta",
                                 List.of(ingredient("400", G, "shrimp"), ingredient("4", CLOVE, "garlic"),
                                                 ingredient("50", G, "butter"), ingredient("1", BUNCH, "parsley"),
-                                                ingredient("1", PIECE, "lemon"), ingredient("300", G, "linguine")), 20));
+                                                ingredient("1", PIECE, "lemon"), ingredient("300", G, "linguine")), 20, 3));
                 seedRecipe(new Recipe("bbq pulled pork", "Slow-cooked pork with smoky sauce",
                                 List.of(ingredient("2", KG, "pork shoulder"), ingredient("3", DL, "bbq sauce"),
                                                 ingredient("1", PIECE, "onion"), ingredient("2", TBSP, "brown sugar"),
-                                                ingredient("1", TBSP, "paprika")), 240));
+                                                ingredient("1", TBSP, "paprika")), 240, 8));
                 seedRecipe(new Recipe("chicken fajitas", "Sizzling chicken with peppers",
                                 List.of(ingredient("500", G, "chicken"), ingredient("2", PIECE, "bell peppers"),
                                                 ingredient("1", PIECE, "onion"), ingredient("2", TBSP, "fajita seasoning"),
-                                                ingredient("8", PIECE, "tortillas")), 30));
+                                                ingredient("8", PIECE, "tortillas")), 30, 4));
                 seedRecipe(new Recipe("mushroom risotto", "Creamy rice with mushrooms",
                                 List.of(ingredient("300", G, "arborio rice"), ingredient("250", G, "mushrooms"),
                                                 ingredient("50", G, "parmesan"), ingredient("1", PIECE, "onion"),
-                                                ingredient("1", L, "vegetable broth")), 40));
+                                                ingredient("1", L, "vegetable broth")), 40, 4));
                 seedRecipe(new Recipe("overnight oats", "Easy make-ahead breakfast",
                                 List.of(ingredient("50", G, "oats"), ingredient("1.5", DL, "milk"),
                                                 ingredient("1", TBSP, "chia seeds"), ingredient("1", TSP, "maple syrup"),
-                                                ingredient("80", G, "berries")), 5));
+                                                ingredient("80", G, "berries")), 5, 1));
                 seedRecipe(new Recipe("turkey chili", "Hearty chili with beans",
                                 List.of(ingredient("500", G, "ground turkey"), ingredient("1", CAN, "kidney beans"),
                                                 ingredient("1", CAN, "tomatoes"), ingredient("1", PIECE, "onion"),
-                                                ingredient("2", TSP, "chili powder")), 45));
+                                                ingredient("2", TSP, "chili powder")), 45, 4));
                 seedRecipe(new Recipe("caprese skewers", "Fresh tomato mozzarella bites",
                                 List.of(ingredient("250", G, "cherry tomatoes"), ingredient("200", G, "mozzarella"),
-                                                ingredient("1", BUNCH, "basil"), ingredient("2", TBSP, "balsamic glaze")), 10));
+                                                ingredient("1", BUNCH, "basil"), ingredient("2", TBSP, "balsamic glaze")), 10, 4));
                 seedRecipe(new Recipe("egg fried rice", "Quick rice with eggs and veggies",
                                 List.of(ingredient("300", G, "rice"), ingredient("3", PIECE, "eggs"),
                                                 ingredient("100", G, "peas"), ingredient("1", PIECE, "carrot"),
-                                                ingredient("2", TBSP, "soy sauce"), ingredient("2", PIECE, "green onion")), 15));
+                                                ingredient("2", TBSP, "soy sauce"), ingredient("2", PIECE, "green onion")), 15, 3));
                 seedRecipe(new Recipe("spinach lasagna", "Layered pasta with spinach and ricotta",
                                 List.of(ingredient("250", G, "lasagna noodles"), ingredient("500", G, "spinach"),
                                                 ingredient("250", G, "ricotta"), ingredient("7", DL, "marinara"),
-                                                ingredient("200", G, "mozzarella")), 60));
+                                                ingredient("200", G, "mozzarella")), 60, 6));
         }
 }

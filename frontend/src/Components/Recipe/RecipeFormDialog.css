@@ -15,8 +15,14 @@
   gap: 0.5rem;
 }
 
-.recipe-form-time {
-  max-width: 12rem;
+.recipe-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.recipe-form-number {
+  width: 12rem;
 }
 
 .recipe-form-shared {

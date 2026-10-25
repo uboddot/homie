@@ -30,6 +30,7 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [preparationTime, setPreparationTime] = useState('');
+  const [portions, setPortions] = useState('4');
   const [ingredients, setIngredients] = useState<IngredientRow[]>([emptyIngredientRow]);
   const [steps, setSteps] = useState<string[]>(['']);
   const [shared, setShared] = useState(false);
@@ -44,6 +45,7 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
     setName(recipe?.name ?? '');
     setDescription(recipe?.description ?? '');
     setPreparationTime(recipe ? String(recipe.preparationTime) : '');
+    setPortions(recipe ? String(recipe.portions) : '4');
     setIngredients(withRow(toIngredientRows(recipe?.ingredients ?? []), emptyIngredientRow));
     setSteps(withRow(recipe?.steps.map(s => s.instruction) ?? [], ''));
     setShared(recipe?.shared ?? false);
@@ -58,6 +60,7 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
       name: name.trim(),
       description: description.trim(),
       preparationTime: preparationTime === '' ? null : Number(preparationTime),
+      portions: portions === '' ? null : Number(portions),
       ingredients: toIngredients(ingredients),
       steps: steps.map(s => s.trim()).filter(Boolean),
       shared,
@@ -108,10 +111,18 @@ export default function RecipeFormDialog({ open, onOpenChange, onSaved, recipe }
               value={description} onChange={e => setDescription(e.target.value)} />
           </div>
 
-          <div className="recipe-form-field recipe-form-time">
-            <Label htmlFor="recipe-time">Preparation time (min)</Label>
-            <Input id="recipe-time" type="number" min={0} inputMode="numeric"
-              value={preparationTime} onChange={e => setPreparationTime(e.target.value)} />
+          <div className="recipe-form-row">
+            <div className="recipe-form-field recipe-form-number">
+              <Label htmlFor="recipe-time">Preparation time (min)</Label>
+              <Input id="recipe-time" type="number" min={0} inputMode="numeric"
+                value={preparationTime} onChange={e => setPreparationTime(e.target.value)} />
+            </div>
+
+            <div className="recipe-form-field recipe-form-number">
+              <Label htmlFor="recipe-portions">Portions</Label>
+              <Input id="recipe-portions" type="number" min={1} step={1} inputMode="numeric" required
+                value={portions} onChange={e => setPortions(e.target.value)} />
+            </div>
           </div>
 
           <IngredientList rows={ingredients} onChange={setIngredients} />

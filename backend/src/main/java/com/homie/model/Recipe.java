@@ -52,6 +52,7 @@ public class Recipe {
     private List<Ingredient> ingredients;
 
     private int preparationTime; // in minutes
+    private int portions; // the ingredient amounts are for this many portions
 
     @JsonIgnore
     @ToString.Exclude
@@ -61,16 +62,17 @@ public class Recipe {
 
     private boolean shared; // visible to all users, not only the owner
 
-    public Recipe(String name, String description, List<Ingredient> ingredients, int preparationTime) {
+    public Recipe(String name, String description, List<Ingredient> ingredients, int preparationTime, int portions) {
         this.name = name;
         this.description = description;
         this.ingredients = ingredients;
         this.preparationTime = preparationTime;
+        this.portions = portions;
     }
 
-    public Recipe(String name, String description, List<Ingredient> ingredients, int preparationTime,
+    public Recipe(String name, String description, List<Ingredient> ingredients, int preparationTime, int portions,
             AppUser owner, boolean shared) {
-        this(name, description, ingredients, preparationTime);
+        this(name, description, ingredients, preparationTime, portions);
         this.owner = owner;
         this.shared = shared;
     }

@@ -75,6 +75,9 @@ public class RecipeController {
         if (request.preparationTime() != null && request.preparationTime() < 0) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Preparation time can't be negative"));
         }
+        if (request.portions() != null && request.portions() < 1) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Portions must be at least 1"));
+        }
         List<Ingredient> ingredients = RecipeService.ingredients(request.ingredients());
         if (ingredients.isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Add at least one ingredient"));

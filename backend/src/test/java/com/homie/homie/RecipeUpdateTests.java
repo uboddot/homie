@@ -23,13 +23,13 @@ import com.jayway.jsonpath.JsonPath;
 class RecipeUpdateTests {
 
     private static final String RECIPE = """
-            {"name":"toast","description":"Quick snack","preparationTime":5,
+            {"name":"toast","description":"Quick snack","preparationTime":5,"portions":1,
              "ingredients":[{"amount":2,"unit":"SLICE","name":"bread"},{"name":"butter"}],"steps":["Toast the bread.","Spread the butter."],
              "shared":false}
             """;
 
     private static final String EDITED = """
-            {"name":" jam toast ","description":"Sweeter","preparationTime":7,
+            {"name":" jam toast ","description":"Sweeter","preparationTime":7,"portions":2,
              "ingredients":[{"amount":1,"unit":"SLICE","name":"bread"},{"name":" "},{"amount":2,"unit":"TBSP","name":" jam "}],"steps":["  ","Spread the jam."],
              "shared":true}
             """;
@@ -61,6 +61,7 @@ class RecipeUpdateTests {
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.name").value("jam toast"))
                 .andExpect(jsonPath("$.preparationTime").value(7))
+                .andExpect(jsonPath("$.portions").value(2))
                 .andExpect(jsonPath("$.shared").value(true))
                 .andExpect(jsonPath("$.ownerUsername").value("anna"))
                 .andExpect(jsonPath("$.ingredients.length()").value(2))

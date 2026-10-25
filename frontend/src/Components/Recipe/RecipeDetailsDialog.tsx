@@ -29,7 +29,8 @@ export default function RecipeDetailsDialog({ recipe, onClose, onEdit }: RecipeD
               </Button>
             </div>
           )}
-          <RecipeDetails recipe={recipe} />
+          {/* keyed, so the chosen portions reset for another recipe or after an edit */}
+          <RecipeDetails key={`${recipe.id}-${recipe.portions}`} recipe={recipe} />
         </DialogContent>
       )}
     </Dialog>

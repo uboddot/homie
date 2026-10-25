@@ -11,7 +11,7 @@ public final class RecipeDtos {
     }
 
     /** New or edited recipe from the frontend; the owner is always the logged-in user, never part of the request. */
-    public record CreateRecipeRequest(String name, String description, Integer preparationTime,
+    public record CreateRecipeRequest(String name, String description, Integer preparationTime, Integer portions,
             List<IngredientRequest> ingredients, List<String> steps, Boolean shared) {
     }
 

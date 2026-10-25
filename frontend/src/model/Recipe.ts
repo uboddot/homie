@@ -4,6 +4,7 @@ export type Recipe = {
     description: string;
     ingredients: Ingredient[];
     preparationTime: number; // in minutes
+    portions: number; // the ingredient amounts are for this many portions
     ownerUsername: string | null;
     shared: boolean;
     steps: Step[];
@@ -53,6 +54,7 @@ export type RecipeInput = {
     name: string;
     description: string;
     preparationTime: number | null; // in minutes
+    portions: number | null; // the backend defaults to 4
     ingredients: Ingredient[];
     steps: string[]; // instructions in order
     shared: boolean;

@@ -21,6 +21,9 @@ import com.homie.repository.UserRepository;
 @Service
 public class RecipeService {
 
+    /** Used when a request doesn't say how many portions the recipe makes. */
+    public static final int DEFAULT_PORTIONS = 4;
+
     private final RecipeRepository recipeRepository;
     private final StepRepository stepRepository;
     private final UserRepository userRepository;
@@ -40,7 +43,8 @@ public class RecipeService {
         int preparationTime = request.preparationTime() == null ? 0 : request.preparationTime();
 
         Recipe recipe = recipeRepository.save(new Recipe(request.name().trim(), description,
-                ingredients(request.ingredients()), preparationTime, owner, Boolean.TRUE.equals(request.shared())));
+                ingredients(request.ingredients()), preparationTime, portions(request), owner,
+                Boolean.TRUE.equals(request.shared())));
 
         saveSteps(recipe, nonBlank(request.steps()));
         return recipe;
@@ -62,11 +66,16 @@ public class RecipeService {
         recipe.setDescription(request.description() == null ? "" : request.description().trim());
         recipe.setIngredients(ingredients(request.ingredients()));
         recipe.setPreparationTime(request.preparationTime() == null ? 0 : request.preparationTime());
+        recipe.setPortions(portions(request));
         recipe.setShared(Boolean.TRUE.equals(request.shared()));
 
         stepRepository.deleteAll(recipe.getSteps());
         saveSteps(recipe, nonBlank(request.steps()));
         return recipe;
+    }
+
+    private static int portions(CreateRecipeRequest request) {
+        return request.portions() == null ? DEFAULT_PORTIONS : request.portions();
     }
 
     /** Saves the steps numbered in the given order. */

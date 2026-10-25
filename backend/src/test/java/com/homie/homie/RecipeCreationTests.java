@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class RecipeCreationTests {
 
     private static final String RECIPE = """
-            {"name":" toast ","description":"Quick snack","preparationTime":5,
+            {"name":" toast ","description":"Quick snack","preparationTime":5,"portions":2,
              "ingredients":[{"amount":2,"unit":"SLICE","name":" bread "},{"name":""},{"amount":0.5,"unit":"TSP","name":"butter"}],"steps":["Toast the bread.","  ","Spread the butter."],
              "shared":false}
             """;
@@ -41,6 +41,7 @@ class RecipeCreationTests {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("toast"))
                 .andExpect(jsonPath("$.ownerUsername").value("anna"))
+                .andExpect(jsonPath("$.portions").value(2))
                 .andExpect(jsonPath("$.ingredients.length()").value(2))
                 .andExpect(jsonPath("$.ingredients[0].name").value("bread"))
                 .andExpect(jsonPath("$.ingredients[0].unit").value("SLICE"))
@@ -57,6 +58,22 @@ class RecipeCreationTests {
                 .content("{\"name\":\" \",\"ingredients\":[{\"name\":\"bread\"}]}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Name is required"));
+    }
+
+    @Test
+    void portionsDefaultToFour() throws Exception {
+        mockMvc.perform(post("/recipes").cookie(loginAsAnna()).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"toast\",\"ingredients\":[{\"name\":\"bread\"}]}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.portions").value(4));
+    }
+
+    @Test
+    void portionsMustBePositive() throws Exception {
+        mockMvc.perform(post("/recipes").cookie(loginAsAnna()).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"toast\",\"portions\":0,\"ingredients\":[{\"name\":\"bread\"}]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Portions must be at least 1"));
     }
 
     @Test
