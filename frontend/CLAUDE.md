@@ -32,6 +32,7 @@ TypeScript + React 19 (function components and hooks), built with Vite.
 
 ## Routing & auth
 - `react-router-dom`. Routes are in `App.tsx`. Pages that need a login go inside the `<ProtectedRoute />` route (it redirects to `/login`).
+- Protected routes: `/` → `HomePage` (placeholder, links to recipes), `/recipes` → `RecipesPage`. Unknown paths redirect to `/`.
 - The JWT is an HttpOnly cookie set by the backend, so JS never sees or stores it. `AuthProvider` restores the user on startup via `GET /auth/me`.
 - Use `useAuth()` for `user`, `login`, `register`, `verifyEmail`, `resendVerification` and `logout`.
 - Email confirmation: `register` doesn't log in. `RegisterPage` then shows "check your inbox". The mail links to `/verify-email?token=…` (`VerifyEmailPage`, public route), which calls `verifyEmail` once (guarded with a ref against StrictMode's double effect, because tokens are one-time) and then goes to `/`. Login with an unconfirmed email returns 403. `LoginPage` then shows `ResendVerification` (`Components/ResendVerification.tsx`).

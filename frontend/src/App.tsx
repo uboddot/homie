@@ -5,6 +5,7 @@ import ProtectedRoute from './Components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import HomePage from './pages/HomePage';
 import RecipesPage from './pages/RecipesPage';
 
 function AppLayout() {
@@ -27,7 +28,8 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<RecipesPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/recipes" element={<RecipesPage />} />
         </Route>
       </Route>
 
