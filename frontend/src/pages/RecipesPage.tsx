@@ -3,6 +3,9 @@ import type { Recipe, RecipeView } from '../model/Recipe';
 import RecipeCollection from '../Components/Recipe/RecipeCollection';
 import RecipeViewToggle from '../Components/Recipe/RecipeViewToggle';
 import RecipeDetailsDialog from '../Components/Recipe/RecipeDetailsDialog';
+import CreateRecipeDialog from '../Components/Recipe/CreateRecipeDialog';
+import { Button } from '@/Components/ui/button';
+import { Plus } from 'lucide-react';
 import { apiFetch } from '../api/client';
 import './RecipesPage.css';
 
@@ -31,6 +34,7 @@ export default function RecipesPage() {
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<RecipeView>(readStoredView);
   const [selected, setSelected] = useState<Recipe | null>(null);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     apiFetch<Recipe[]>('/recipes')
@@ -52,17 +56,29 @@ export default function RecipesPage() {
     return <div className="page-message">{error}</div>;
   }
 
-  if(recipes.length < 1) {
-    return <div className="page-message">No recipes found.</div>;
-  }
-
   return (
-    <div className="page">
-      <div className="recipes-toolbar">
-        <RecipeViewToggle view={view} onChange={changeView} />
-      </div>
-      <RecipeCollection recipes={recipes} view={view} onSelect={setSelected} />
+    <div className="page recipes-page">
+      {recipes.length < 1 ? (
+        // no early return: new users start empty and still need the create button
+        <div className="page-message">No recipes yet. Create your first one!</div>
+      ) : (
+        <>
+          <div className="recipes-toolbar">
+            <RecipeViewToggle view={view} onChange={changeView} />
+          </div>
+          <RecipeCollection recipes={recipes} view={view} onSelect={setSelected} />
+        </>
+      )}
       <RecipeDetailsDialog recipe={selected} onClose={() => setSelected(null)} />
+
+      <Button size="lg" className="recipes-create-button" onClick={() => setCreating(true)}>
+        <Plus /> New recipe
+      </Button>
+      <CreateRecipeDialog
+        open={creating}
+        onOpenChange={setCreating}
+        onCreated={recipe => setRecipes(prev => [recipe, ...prev])}
+      />
     </div>
   )
 }

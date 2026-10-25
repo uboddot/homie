@@ -6,7 +6,7 @@ Spring Boot 4 REST API (Java, Maven), with JPA, Spring Security, Spring Mail, Lo
 - `controller/`: REST endpoints (`AuthController` `/auth`, `RecipeController` `/recipes`, `RecipeManagementController` `/management/recipes`, `HealthController` `/health`). Request/response DTOs live in `controller/dto/`.
 - `model/`: JPA entities (`AppUser`, `EmailVerificationToken`, `Recipe`, `Step`)
 - `repository/`: Spring Data repositories
-- `services/`: business logic and external integrations (`EmailVerificationService`, `MailService`, Gemini)
+- `services/`: business logic and external integrations (`RecipeService`, `EmailVerificationService`, `MailService`, Gemini)
 - `security/`: `ApplicationSecurityConfig` (filter chain, CORS), `DbUserDetailsService` (loads users from the DB), `ApplicationUserRole` / `ApplicationUserPermission` (roles and permissions)
 - `jwt/`: `JwtService` (create/verify tokens, build cookies), `JwtCookieAuthFilter` (authenticates each request from the cookie)
 - `db/Seeder.java`: seed data on startup (only with the `dev` profile)
@@ -47,6 +47,7 @@ Conventions:
 - H2 file DB at `/tmp/homiedb`. `ddl-auto: create-drop` recreates the schema on every start. In `dev` the data comes from `Seeder.java`, otherwise the DB starts empty.
 - Tables: `app_user` (`user` is reserved in H2, has `email_verified`), `email_verification_token`, `recipe` (`owner_id` → `app_user`, `shared`), `step`.
 - A user sees their own recipes plus all `shared` ones (`RecipeRepository.findVisibleFor`).
+- `owner` is also the creator ("by …" in the UI). `POST /recipes` (`RecipeDtos.CreateRecipeRequest`, needs `recipe:write`) always sets it to the logged-in user, never from the request. `RecipeService.create` drops blank ingredients/steps and numbers the steps in order. Missing name / negative time / no ingredient → 400, success → 201 with the recipe.
 - H2 console (dev only): `http://localhost:8080/h2-console`
 
 ## Commands

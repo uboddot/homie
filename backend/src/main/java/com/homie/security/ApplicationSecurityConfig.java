@@ -2,6 +2,7 @@ package com.homie.security;
 
 import static com.homie.security.ApplicationUserPermission.RECIPE_ADMIN;
 import static com.homie.security.ApplicationUserPermission.RECIPE_READ;
+import static com.homie.security.ApplicationUserPermission.RECIPE_WRITE;
 
 import java.util.List;
 
@@ -49,6 +50,7 @@ public class ApplicationSecurityConfig {
                         // error dispatches run without the JWT filter, otherwise 403/404 would turn into 401
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/recipes").hasAuthority(RECIPE_WRITE.getPermission())
                         .requestMatchers("/recipes/**").hasAuthority(RECIPE_READ.getPermission())
                         .requestMatchers("/management/**").hasAuthority(RECIPE_ADMIN.getPermission())
                         .anyRequest().authenticated())

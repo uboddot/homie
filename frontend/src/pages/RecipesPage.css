@@ -1,3 +1,19 @@
+/* room at the bottom, so the fixed create button doesn't cover the last recipes */
+.recipes-page {
+  padding-bottom: 6rem;
+}
+
+/* bottom center of the viewport; below the dialog overlay (z-50) */
+.recipes-create-button {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
+}
+
 .recipes-toolbar {
   display: flex;
   justify-content: flex-end;

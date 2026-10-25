@@ -23,6 +23,7 @@ TypeScript + React 19 (function components and hooks), built with Vite.
   - Views: `RecipeCard`, `RecipeListItem`. All take `RecipeViewProps` (`types.ts`: `recipe`, optional `onSelect`) and spread `selectableProps(recipe, onSelect)` (`selectable.ts`) on their root, so they are clickable and keyboard accessible.
   - Clicking a recipe opens `RecipeDetailsDialog` (shadcn Dialog). Its body is `RecipeDetails` (meta, ingredients, ordered steps), which can be reused e.g. on a detail page. A new view = a new component + an entry in `views` + an entry in the `RecipeView` type (`model/Recipe.ts`).
   - `RecipeCollection` lays out many recipes with the wrapper that fits the view. `RecipeViewToggle` switches the view.
+  - `CreateRecipeDialog` is the modal form for a new recipe (`POST /recipes`, body type `NewRecipe`). It's opened by the fixed "New recipe" button at the bottom center of `RecipesPage`, which also shows when the list is empty. `EditableList` is its add/remove-rows field, used for ingredients and (numbered) steps.
   - Pages use `Recipe`/`RecipeCollection`, never a specific view directly.
 - `Components/ui/`: generated shadcn components
 - `api/client.ts`: `apiFetch<T>()`, the only place that calls `fetch`

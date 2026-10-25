@@ -17,3 +17,13 @@ export type Step = {
     stepOrder: number;
     instruction: string;
 }
+
+/** Body of POST /recipes (backend: RecipeDtos.CreateRecipeRequest); the owner is set by the backend */
+export type NewRecipe = {
+    name: string;
+    description: string;
+    preparationTime: number | null; // in minutes
+    ingredients: string[];
+    steps: string[]; // instructions in order
+    shared: boolean;
+}

@@ -1,0 +1,29 @@
+.editable-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.editable-list legend {
+  margin-bottom: 0.5rem;
+}
+
+.editable-list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.editable-list-number {
+  min-width: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  text-align: right;
+}
+
+.editable-list-add {
+  align-self: flex-start;
+}
