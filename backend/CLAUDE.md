@@ -1,6 +1,6 @@
 # Backend
 
-Spring Boot 4 REST API (Java, Maven), with JPA, Spring Security, Spring Mail, Lombok, jjwt and Google GenAI.
+Spring Boot 4 REST API (Java, Maven), with JPA, Flyway, PostgreSQL, Spring Security, Spring Mail, Lombok, jjwt and Google GenAI.
 
 ## Package layout (`src/main/java/com/homie/`)
 - `controller/`: REST endpoints (`AuthController` `/auth`, `RecipeController` `/recipes`, `RecipeManagementController` `/management/recipes`, `MealPlanController` `/meal-plan`, `SettingsController` `/settings`, `HealthController` `/health`). Request/response DTOs live in `controller/dto/`.
@@ -10,7 +10,7 @@ Spring Boot 4 REST API (Java, Maven), with JPA, Spring Security, Spring Mail, Lo
 - `security/`: `ApplicationSecurityConfig` (filter chain, CORS), `DbUserDetailsService` (loads users from the DB), `ApplicationUserRole` / `ApplicationUserPermission` (roles and permissions)
 - `jwt/`: `JwtService` (create/verify tokens, build cookies), `JwtCookieAuthFilter` (authenticates each request from the cookie)
 - `nutrition/`: self-contained module for the macros per portion (entities, repositories and services in one package), see "Nutrition" below
-- `db/Seeder.java`: seed data on startup (only with the `dev` profile)
+- `db/Seeder.java`: seed data on startup (only with the `dev` profile, and only into an empty DB)
 
 Conventions:
 - Keep controllers thin. Persistence goes in `repository`, logic in `services`.
@@ -29,33 +29,40 @@ Conventions:
 - Config under `jwt.*`. Outside the `dev` profile, `JWT_SECRET` (base64, ≥256 bit) is required and the cookie is `Secure`.
 - Access rules are defined only in `ApplicationSecurityConfig`. Use the role/permission enums, not string literals.
   - Roles: `USER` (`recipe:read`, `recipe:write`) and `ADMIN` (+ `recipe:admin`, needed for `/management/**`).
-- CORS is configured in the `CorsConfigurationSource` bean for `http://localhost:5173`, with credentials allowed. Don't add `@CrossOrigin` to controllers.
+- CORS is configured in the `CorsConfigurationSource` bean from `app.cors-allowed-origins` (`CORS_ALLOWED_ORIGINS`, comma-separated), with credentials allowed. `dev` allows `http://localhost:5173`. The default is none, because in staging the browser reaches the backend through the frontend's nginx (same origin). Don't add `@CrossOrigin` to controllers.
 - Unauthenticated → 401 and missing permission → 403, never a redirect. `/error` must stay `permitAll`, or 403/404 would turn into 401.
-- CSRF is disabled for now. Enable `CookieCsrfTokenRepository` before a public deployment.
+- CSRF is on (`csrf.spa()`): the backend sets a readable `XSRF-TOKEN` cookie, and every non-GET request must send it back as the `X-XSRF-TOKEN` header (the frontend's `apiFetch` does). Missing/wrong → 403. MockMvc tests get a valid token on every request from `CsrfTestConfig` (test sources).
 - Dev users (seeded in `dev`, already verified): `anna`/`password` (USER), `admin`/`password123` (ADMIN), `user`/`password` (USER, owns 3 private recipes with steps and a few meal plan entries around today).
 
 ## Mail
-- Sent via `JavaMailSender` (`spring.mail.*`). Outside `dev`, set `MAIL_HOST`, `MAIL_PORT` (587), `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` and `FRONTEND_URL`.
+- `MailService` builds the message and hands it to a `MailTransport`:
+  - `SmtpMailTransport` (default): `JavaMailSender` (`spring.mail.*`). Outside `dev`, set `MAIL_HOST`, `MAIL_PORT` (587), `MAIL_USERNAME`, `MAIL_PASSWORD`.
+  - `ResendMailTransport`: Resend's HTTP API, active when `RESEND_API_KEY` (`app.resend-api-key`) is set. Used on Railway, whose free/hobby plans block outgoing SMTP. Errors are rethrown as `MailSendException`.
+  - Always set `MAIL_FROM` and `FRONTEND_URL` outside `dev`. `AuthController` logs a failed send as a warning.
 - In `dev`, mails go to **Mailpit** on `localhost:1025` (no auth/TLS). Its inbox is at http://localhost:8025. Docker Compose starts it. Locally: `docker run -p 1025:1025 -p 8025:8025 axllent/mailpit`.
-- Tests mock `JavaMailSender` with `@MockitoBean` (see `EmailVerificationTests`).
+- Tests mock `JavaMailSender` with `@MockitoBean` (see `EmailVerificationTests`), so they go through `SmtpMailTransport`.
 
 ## Profiles
-- `application.yml`: base config for all environments (secure defaults, no seeding, H2 console off).
-- `application-dev.yml` (`dev` profile): dev JWT secret, non-secure cookie, H2 console on, Mailpit as SMTP, frontend URL `http://localhost:5173`, and the `Seeder` runs (`@Profile("dev")`).
-- Docker dev sets `SPRING_PROFILES_ACTIVE=dev`. Tests use `@ActiveProfiles("dev")` with an in-memory DB.
+- `application.yml`: base config for all environments (secure defaults, no seeding). The DB comes from `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` (Railway's Postgres variable names), the port from `PORT` (8080).
+- `application-dev.yml` (`dev` profile): local Postgres defaults (`homie`/`homie`/`homie` on localhost:5432), dev JWT secret, non-secure cookie, Mailpit as SMTP, CORS and frontend URL `http://localhost:5173`, and the `Seeder` runs (`@Profile("dev")`).
+- `application-staging.yml` (`staging` profile, Railway): trusts nginx's `X-Forwarded-*` headers. Everything else comes from env (see `DEPLOY.md`).
+- Docker dev sets `SPRING_PROFILES_ACTIVE=dev`. Tests use `@ActiveProfiles("dev")` with a Testcontainers Postgres per test class.
 
 ## Database
-- H2 file DB at `/tmp/homiedb`. `ddl-auto: create-drop` recreates the schema on every start. In `dev` the data comes from `Seeder.java`, otherwise the DB starts empty.
-- Tables: `app_user` (`user` is reserved in H2, has `email_verified`), `email_verification_token`, `recipe` (`owner_id` → `app_user`, `shared`), `recipe_ingredient` (`@ElementCollection` of the `Ingredient` embeddable, ordered by `position`), `step`.
+- PostgreSQL. **Flyway** owns the schema (`src/main/resources/db/migration/V<n>__*.sql`). Hibernate only validates it (`ddl-auto: validate`).
+  - Every entity change needs a new migration. Never edit one that already ran. A mismatch fails at startup (and in the tests).
+  - Enum columns are plain varchars without CHECK constraints, so a new enum constant needs no migration.
+- Data persists across restarts. In `dev` the `Seeder` fills an empty DB, otherwise the DB starts empty. Reset dev: `docker compose -f docker-compose.dev.yml down -v`.
+- Tables: `app_user` (`user` is reserved in SQL, has `email_verified`), `email_verification_token`, `recipe` (`owner_id` → `app_user`, `shared`), `recipe_ingredient` (`@ElementCollection` of the `Ingredient` embeddable, ordered by `position`), `step`.
 - An ingredient is `{ amount, unit, name }`: `amount` a decimal (`BigDecimal`), `unit` an `IngredientUnit` enum constant (`G`, `KG`, `DL`, `TSP`, `PINCH`, `PIECE`, …). Both are optional ("salt"), `name` is required.
 - `portions` (int ≥ 1) says how many portions the ingredient amounts are for; the frontend scales from it. Missing in a request → 4 (`RecipeService.DEFAULT_PORTIONS`).
 - A user sees their own recipes plus all `shared` ones (`RecipeRepository.findVisibleFor`).
 - `owner` is also the creator ("by …" in the UI). `POST /recipes` (`RecipeDtos.CreateRecipeRequest`, needs `recipe:write`) always sets it to the logged-in user, never from the request. `RecipeService.create` drops blank ingredients/steps and numbers the steps in order. Missing name / negative time / portions < 1 / no ingredient / amount ≤ 0 / unit without amount / amount or unit without a name / unknown unit → 400. A valid cookie whose user is no longer in the DB (e.g. after a restart recreated it) → 401. Success → 201 with the recipe.
 - `PUT /recipes/{id}` (same body, needs `recipe:write`) overwrites all fields and replaces the steps (`RecipeService.update`). Only the owner may edit: unknown id → 404, someone else's recipe → 403, same 400 validation as create, success → 200 with the recipe.
-- H2 console (dev only): `http://localhost:8080/h2-console`
+- Inspect the dev DB: `docker exec -it homie-postgres psql -U homie`
 
 ## Meal plan
-- Table `meal_plan_entry` (`MealPlanEntry`): `user_id`, `plan_date` (`date` is reserved in H2), `slot` (`MealSlot`: `BREAKFAST`, `LUNCH`, `DINNER`), `recipe_id`. At most one entry per user, date and slot (unique constraint). Past days are what was eaten, future ones what is planned; there is no difference in the data.
+- Table `meal_plan_entry` (`MealPlanEntry`): `user_id`, `plan_date` (`date` is reserved in SQL), `slot` (`MealSlot`: `BREAKFAST`, `LUNCH`, `DINNER`), `recipe_id`. At most one entry per user, date and slot (unique constraint). Past days are what was eaten, future ones what is planned; there is no difference in the data.
 - Each user only ever sees and changes their own plan (always the logged-in user, never from the request).
 - `GET /meal-plan?from=yyyy-mm-dd&to=yyyy-mm-dd` (needs `recipe:read`): entries of that range, both ends inclusive, ordered by date and slot, as `MealPlanDtos.MealPlanEntryResponse` `{ date, slot, recipeId, recipeName }`. `from` after `to`, or more than 400 days (`MealPlanController.MAX_DAYS`) → 400.
 - `PUT /meal-plan` `{ dates, slot, recipeId }` (`SetMealRequest`, needs `recipe:write`): sets the slot to the recipe on every date (several days at once), `recipeId: null` clears it. Returns all entries of those dates afterwards. No dates / more than 400 / no slot → 400. The recipe must be visible to the user (own or shared): unknown → 404, someone else's private recipe → 403.
@@ -88,7 +95,7 @@ Conventions:
   - table `ingredient_unit_weight`: grams of one unit per (name, unit), e.g. potato `PIECE` = 170 g.
   - Names are normalized: trimmed, whitespace collapsed, lowercased.
   - Only missing entries are fetched, with **one** `NutritionSource.fetch` call per recipe, and the answers are stored. Nothing is stored for what the source didn't answer, so it is asked again next time.
-  - Because of `create-drop`, the cache is emptied on every restart.
+  - The cache persists across restarts (it's a normal table).
 - `GeminiNutritionSource` (the `NutritionSource`):
   - Uses `gemini-3-flash-preview` with a JSON `responseSchema`. It asks for macros per 100 g and stores them divided by 100.
   - It drops answers to things it didn't ask for, and implausible values (negative, > 100 g per 100 g, weight ≤ 0).
@@ -99,5 +106,5 @@ Conventions:
 
 ## Commands
 - `./mvnw compile`
-- `./mvnw test`
+- `./mvnw test` (needs Docker, for Testcontainers)
 - `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev` (local dev with seed data)

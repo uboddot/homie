@@ -1,21 +1,19 @@
 spring:
   application:
     name: homie-backend
+  # PG* are the variable names Railway's Postgres service exposes
   datasource:
-    url: jdbc:h2:file:/tmp/homiedb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://${PGHOST}:${PGPORT:5432}/${PGDATABASE}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create-drop
-    defer-datasource-initialization: true
-  h2:
-    console:
-      enabled: false
+      # the schema comes from Flyway (db/migration), Hibernate only checks it matches the entities
+      ddl-auto: validate
+  flyway:
+    enabled: true
   mail:
-    host: ${MAIL_HOST}
+    host: ${MAIL_HOST:localhost}
     port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
@@ -23,11 +21,18 @@ spring:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
+server:
+  port: ${PORT:8080}
+
 app:
   # used to build the link in the verification mail
   frontend-url: ${FRONTEND_URL}
   mail-from: ${MAIL_FROM:no-reply@homie.local}
   verification-token-hours: 24
+  # set RESEND_API_KEY to send mails over Resend's HTTP API instead of SMTP
+  resend-api-key: ${RESEND_API_KEY:}
+  # only needed when the browser calls the backend from another origin (the Vite dev server)
+  cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:}
 
 jwt:
   # base64-encoded, at least 256 bit. Required outside the dev profile.

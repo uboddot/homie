@@ -133,6 +133,11 @@ public class Seeder {
 
         @PostConstruct
         public void seed() {
+                // the dev DB is kept across restarts, so only seed an empty one
+                if (userRepository.existsByUsername("admin")) {
+                        return;
+                }
+
                 // Dev users
                 anna = seedUser("anna", "password", ApplicationUserRole.USER);
                 admin = seedUser("admin", "password123", ApplicationUserRole.ADMIN);

@@ -19,7 +19,7 @@ import com.homie.jwt.JwtService;
 import com.homie.nutrition.NutritionSource;
 import com.homie.security.ApplicationUserRole;
 
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:recipetestdb")
+@SpringBootTest(properties = "spring.datasource.url=jdbc:tc:postgresql:17-alpine:///recipetestdb")
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 class RecipeCreationTests {

@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import com.homie.nutrition.NutritionSource;
 
 // the tests share one database: admin is never changed, user gets targets, anna toggles AI
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:settingstestdb")
+@SpringBootTest(properties = "spring.datasource.url=jdbc:tc:postgresql:17-alpine:///settingstestdb")
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 class SettingsTests {

@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:verifytestdb")
+@SpringBootTest(properties = "spring.datasource.url=jdbc:tc:postgresql:17-alpine:///verifytestdb")
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 class EmailVerificationTests {

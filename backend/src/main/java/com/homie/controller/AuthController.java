@@ -1,5 +1,7 @@
 package com.homie.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,8 @@ import com.homie.services.EmailVerificationService;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
@@ -91,6 +95,7 @@ public class AuthController {
         try {
             emailVerificationService.sendVerification(user);
         } catch (MailException e) {
+            log.warn("Could not send the verification mail", e);
             // without the mail the account could never be activated, so don't keep it
             userRepository.delete(user);
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
@@ -115,6 +120,7 @@ public class AuthController {
         try {
             emailVerificationService.resend(request.email());
         } catch (MailException e) {
+            log.warn("Could not send the verification mail", e);
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(new MessageResponse("Could not send the confirmation email, please try again later"));
         }

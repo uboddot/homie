@@ -1,0 +1,54 @@
+# Local smoke test of the production images, wired like on Railway:
+# only the frontend is published, and its nginx proxies /api to the backend.
+#   docker compose -f docker-compose.staging.yml up --build   → http://localhost:8081, mails at http://localhost:8025
+name: homie-staging # separate from the dev stack
+
+services:
+  frontend:
+    build: ./frontend
+    image: homie-frontend:staging
+    ports:
+      - "8081:80"
+    environment:
+      - BACKEND_URL=http://backend:8080
+    depends_on: [backend]
+
+  backend:
+    build: ./backend
+    image: homie-backend:staging
+    environment:
+      - SPRING_PROFILES_ACTIVE=staging
+      - PGHOST=postgres
+      - PGDATABASE=homie
+      - PGUSER=homie
+      - PGPASSWORD=homie
+      - JWT_SECRET=c3RhZ2luZy1zbW9rZS10ZXN0LW9ubHktbm90LWEtcmVhbC1zZWNyZXQ= # local only
+      - FRONTEND_URL=http://localhost:8081
+      - MAIL_HOST=mailpit
+      - MAIL_PORT=1025
+      - MAIL_USERNAME=smoke # mailpit accepts any login; with SMTP auth on, JavaMail needs one
+      - MAIL_PASSWORD=smoke
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=homie
+      - POSTGRES_PASSWORD=homie
+      - POSTGRES_DB=homie
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homie"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1

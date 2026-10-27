@@ -10,7 +10,6 @@ services:
     volumes:
       - ./backend/src:/app/src
       - ./backend/pom.xml:/app/pom.xml # dependency changes only need a container restart
-      - homie-h2-data:/tmp
       - homie-m2:/root/.m2 # Maven + dependencies, kept across container recreates
       - homie-backend-target:/app/target # compiled classes, so restarts compile incrementally
     environment:
@@ -19,13 +18,36 @@ services:
       - MAVEN_ARGS=--no-transfer-progress # without a TTY the download progress floods the log
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - MAIL_HOST=mailpit
+      - PGHOST=postgres
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
-    depends_on: [mailpit]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  # dev DB, kept in the homie-pg-data volume. Reset: docker compose -f docker-compose.dev.yml down -v
+  postgres:
+    image: postgres:17-alpine
+    container_name: homie-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=homie
+      - POSTGRES_PASSWORD=homie
+      - POSTGRES_DB=homie
+    volumes:
+      - homie-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homie"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # fake SMTP server: catches every mail the backend sends, inbox at http://localhost:8025
   mailpit:
@@ -52,6 +74,6 @@ services:
     depends_on: [backend]
 
 volumes:
-  homie-h2-data:
+  homie-pg-data:
   homie-m2:
   homie-backend-target:

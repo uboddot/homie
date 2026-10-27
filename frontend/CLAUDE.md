@@ -67,9 +67,12 @@ TypeScript + React 19 (function components and hooks), built with Vite.
 
 ## Backend API
 - Always go through `apiFetch` (base URL `VITE_API_URL`, default `http://localhost:8080`, `credentials: 'include'`). It throws `ApiError` with `status`.
+  - The prod image builds with `VITE_API_URL=/api`, and its nginx (`nginx/default.conf.template`) proxies `/api/*` to the backend (`BACKEND_URL`), so the browser sees one origin.
+  - CSRF: on non-GET requests `apiFetch` sends the `XSRF-TOKEN` cookie back as the `X-XSRF-TOKEN` header. Without it the backend answers 403.
 - Handle loading, error (401 = not logged in) and empty states separately.
 
 ## Commands
 - `npm run dev`
 - `npm run build` (type-check + build)
+- Prod image: `docker build -t homie-frontend .` (multi-stage: Vite build, then nginx)
 - `npm run lint`

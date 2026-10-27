@@ -20,7 +20,7 @@ import com.homie.nutrition.NutritionSource;
 
 import com.jayway.jsonpath.JsonPath;
 
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:recipeupdatetestdb")
+@SpringBootTest(properties = "spring.datasource.url=jdbc:tc:postgresql:17-alpine:///recipeupdatetestdb")
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 class RecipeUpdateTests {

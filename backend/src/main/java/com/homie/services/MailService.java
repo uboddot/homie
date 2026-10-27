@@ -2,17 +2,16 @@ package com.homie.services;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MailService {
 
-    private final JavaMailSender mailSender;
+    private final MailTransport transport;
     private final String from;
 
-    public MailService(JavaMailSender mailSender, @Value("${app.mail-from}") String from) {
-        this.mailSender = mailSender;
+    public MailService(MailTransport transport, @Value("${app.mail-from}") String from) {
+        this.transport = transport;
         this.from = from;
     }
 
@@ -30,6 +29,6 @@ public class MailService {
 
                 The link is valid for 24 hours. If you didn't register at Homie, just ignore this mail.
                 """.formatted(username, link));
-        mailSender.send(message);
+        transport.send(message);
     }
 }

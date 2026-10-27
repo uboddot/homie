@@ -40,7 +40,7 @@ import com.jayway.jsonpath.JsonPath;
  * Nutrition suggestions with a fake source that knows ingredients by their last word, so every test can use its
  * own names ("a potato", "b potato") and start with an empty cache.
  */
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:nutritiontestdb")
+@SpringBootTest(properties = "spring.datasource.url=jdbc:tc:postgresql:17-alpine:///nutritiontestdb")
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 class NutritionTests {

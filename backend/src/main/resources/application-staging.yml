@@ -1,0 +1,10 @@
+# Staging on Railway: SPRING_PROFILES_ACTIVE=staging. Required env, see DEPLOY.md:
+# PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD, JWT_SECRET, FRONTEND_URL, RESEND_API_KEY (or MAIL_*), MAIL_FROM, GOOGLE_API_KEY
+# The backend is only reachable through the frontend's nginx (/api), so the browser sees one origin and CORS stays off.
+server:
+  # nginx sets X-Forwarded-Proto/For, so redirects and request URLs use the public https address
+  forward-headers-strategy: framework
+
+logging:
+  level:
+    root: INFO

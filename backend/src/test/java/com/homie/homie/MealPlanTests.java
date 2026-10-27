@@ -24,7 +24,7 @@ import com.homie.nutrition.NutritionSource;
 import com.jayway.jsonpath.JsonPath;
 
 // every test uses its own dates, because they share one database (and the seeded meals are around today)
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:mealplantestdb")
+@SpringBootTest(properties = "spring.datasource.url=jdbc:tc:postgresql:17-alpine:///mealplantestdb")
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 class MealPlanTests {

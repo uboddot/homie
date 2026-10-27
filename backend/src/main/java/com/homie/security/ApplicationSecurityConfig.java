@@ -6,6 +6,7 @@ import static com.homie.security.ApplicationUserPermission.RECIPE_WRITE;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,20 +37,18 @@ public class ApplicationSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF is off: the JWT cookie is SameSite=Lax and CORS only allows the frontend origin.
-                // Enable CookieCsrfTokenRepository before deploying anywhere public.
-                .csrf(csrf -> csrf.disable())
+                // SPA setup: the token goes out in the readable XSRF-TOKEN cookie, and apiFetch
+                // sends it back as the X-XSRF-TOKEN header on every non-GET request
+                .csrf(csrf -> csrf.spa())
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // for the H2 console
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/logout",
                                 "/auth/verify-email", "/auth/resend-verification").permitAll()
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         // error dispatches run without the JWT filter, otherwise 403/404 would turn into 401
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/recipes").hasAuthority(RECIPE_WRITE.getPermission())
                         .requestMatchers(HttpMethod.PUT, "/recipes/**").hasAuthority(RECIPE_WRITE.getPermission())
                         .requestMatchers("/recipes/**").hasAuthority(RECIPE_READ.getPermission())
@@ -70,9 +69,10 @@ public class ApplicationSecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors-allowed-origins}") List<String> allowedOrigins) {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
